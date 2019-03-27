@@ -37,3 +37,10 @@ Si annotano di seguito alcune idee pensate in corso d'opera:
 * Per la realizzazione del pavimento della zona centrale del primo edifico si è pensato di relaizzare una griglia di parallelepipedi adiacenti (in modo da coprire tutta l'area necessaria) con stessa larghezza e profondità andando a variarne leggermente e casualmente l'altezza intorno ad un valore medio uguale per tutti: in questo modo si può ottenere l'effetto di un pavimento tassellato e sconnesso;
 * Per la realizzazione della parte inferiore dell'isola flottante si utilizzerà un approccio analogo a quello precedente ovvero si considererà un griglia di parallelepipedi la cui altezza sarà modulata da una funzione gaussiana bidimensionale (così da ottenere la forma visibile nei bozzetti);
 * I cubi flottanti potrebbero essere generati casualmente all'inizializzazione della scena (evitando ovviamente che vadano ad intersecarsi con gli edfici o le isole flottanti).
+
+### Bozzetti:
+Varie viste dell'edifico della prima isola
+![Edificio in rovina](RuinedBuilding1.jpg)
+
+Schema con per avere un'idea di come dovrebbe venire la parte inferiore delle isole flottanti (estendere ovviamente in 3D)
+![Parte inferiore isola](FloatingIsland1.jpg)
