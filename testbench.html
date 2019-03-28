@@ -1,0 +1,127 @@
+<html>
+	<head>
+		<title>Testbench</title>
+		<style>
+		
+		body {
+			font-family: Monospace;
+			background-color: #f0f0f0;
+			margin: 0px;
+			overflow: hidden;
+		}
+		
+		canvas { 
+			width: 100%; 
+			height: 100%;
+		}
+	
+	</style>
+		<script src="lib/three.min.js"></script>
+		<script src="lib/stats.min.js"></script>
+		<script src="lib/Coordinates.js"></script>
+		<script src="lib/OrbitControls.js"></script>
+		<script src="src/SceneActors.js"></script>
+	</head>
+	<body>
+		
+		<script>
+		
+		var scene, camera, renderer, controls, stats;
+
+		function Column(position, c_geom, m_geom, b_geom, mat)
+		{
+			this.basement = new THREE.Mesh(b_geom, mat);
+			this.basement.castShadow = true;
+			this.basement.receiveShadow = true;
+			this.basement.position.x = position.x;
+			this.basement.position.y = position.y;
+			this.basement.position.z = position.z;
+
+			this.main = new THREE.Mesh(m_geom, mat);
+			this.main.castShadow = true;
+			this.main.receiveShadow = true;
+			this.main.position.set(0, 1.75, 0);
+			this.basement.add(this.main);
+
+			this.capitel = new THREE.Mesh(c_geom, mat);
+			this.capitel.castShadow = true;
+			this.capitel.receiveShadow = true;
+			this.capitel.position.set(0, 1.5, 0);
+			this.main.add(this.capitel);			
+		}
+		
+		function Start() {
+
+			InitGeometries();
+
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color("rgb(10%, 30%, 60%)");
+			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			renderer = new THREE.WebGLRenderer( {antialias: true} );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setClearColor( 0xf0f0f0 );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.gammaInput = true;
+			renderer.gammaOutput = true;
+			renderer.shadowMap.enabled = true;
+			document.body.appendChild( renderer.domElement );
+			
+			camera.position.set(2,2,2);
+			camera.lookAt( new THREE.Vector3(0,0,0));
+			
+			var c_material = new THREE.MeshPhongMaterial();
+			c_material.color.setRGB(0.8, 0.8, 0.8);
+
+			//Test Big Island Pivot
+			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, 0), new THREE.Vector3(0, 0, 0), c_material);
+
+			scene.add(bigIsland.pivot);
+
+			hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
+			hemiLight.color.setRGB( 0.1, 0.3, 0.6);
+			hemiLight.groundColor.setRGB( 0.8, 0.8, 0.8 );
+			hemiLight.position.set( 0, 500, 0 );
+			scene.add( hemiLight );
+
+			dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+			dirLight.color.setRGB( 1, 0.8, 0.7 );
+			dirLight.position.set( -1, 1.75, 1 );
+			dirLight.position.multiplyScalar( 50 );
+			scene.add( dirLight );
+			dirLight.castShadow = true;
+			dirLight.shadow.mapSize.width = 1024;
+			dirLight.shadow.mapSize.height = 1024;
+			
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			document.body.appendChild( stats.domElement );
+			
+			// uncomment if you need to draw coordinate axes when building the scene
+			//Coordinates.drawAllAxes();
+			
+			controls = new THREE.OrbitControls( camera );
+			controls.addEventListener( 'change', Render );
+			
+			
+		}
+		
+		function Update() {
+			requestAnimationFrame( Update );
+			controls.update();  
+			stats.update();
+			Render();
+		}
+		
+		function Render() {
+			
+			renderer.render(scene, camera);
+		}
+		
+		Start();
+		Update();
+			
+		</script>
+	</body>
+</html>

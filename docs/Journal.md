@@ -40,7 +40,15 @@ Si annotano di seguito alcune idee pensate in corso d'opera:
 
 ### Bozzetti:
 Varie viste dell'edifico della prima isola
-![Edificio in rovina](RuinedBuilding1.jpg)
+![Edificio in rovina](images\RuinedBuilding1.jpg)
 
 Schema con per avere un'idea di come dovrebbe venire la parte inferiore delle isole flottanti (estendere ovviamente in 3D)
-![Parte inferiore isola](FloatingIsland1.jpg)
+![Parte inferiore isola](images\FloatingIsland1.jpg)
+
+## 28/03/2019 - Giorno 3: organizzazione della scena
+
+Dopo aver ragionato sull'efficacia dell'approccio "design su UDK e trasposizione su three.js" e a fronte di alcuni test effettuati su three.js, si decide di eliminare il design preliminare su UDK per focalizzarsi sulla relizzazione diretta della scena in javascript.
+Per semplificare tale lavoro è stata scelta la seguente organizzazione gerarchica della scena che permette di ridurre al massimo i gradi di libertà dei singoli oggetti (nel senso di renderne posizioni e rotazioni il più relative possibile) in modo da rendere semplice calcolarne le posizioni all'interno della scena (si passa dal dover calcolare posizioni assolute, che risulta piuttosto difficile vista la complicatezza della scena in oggetto, a posizioni relative che permettono un minor "sforzo" e quindi accelerano lo sviluppo):
+
+![Gerarchia scena semplificata](images\SceneHierarchy.png)
+
