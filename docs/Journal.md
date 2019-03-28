@@ -52,3 +52,13 @@ Per semplificare tale lavoro è stata scelta la seguente organizzazione gerarchi
 
 ![Gerarchia scena semplificata](images\SceneHierarchy.png)
 
+Seguendo quanto detto nel paragrafo precedente si è proceduto all'implementazione della scena in javascript andando, inoltre, a porre le basi per la struttura stessa del codice (aggiungedo il file sorgente SceneActors.js che conterrà tutti i costruttori e le variabili relative agli oggetti in scena, successivamente si andranno a spostare le funzioni ausiliarie, ora contenute in questo stesso file, in un sorgente apposito per rendere il codice più ordinato).
+Attualmente la prima isola flottante è completa di colonne (rotte e intere) e pavimento "dissestato".
+Durante il testing di questa versione del codice si è notato, però, che le prestazioni vengono notevolmente influenzate dall'abilitazione delle ombre per i vari oggetti che compongno la scena, si è proceduto, quindi, ad un confronto dei risultati ottenuti con o senza ombre (vedi immagini sotto):
+
+![Versione con ombre](images\IslandShadows.png)
+![Versione senza ombre](images\IslandNoShadows.png)
+
+Si vede chiaramente come la prima sembri più realistica ma si nota anche come la seconda dia maggiormente la sensazione di "mondo digitale" che si intende dare alla scena.
+
+Si manterrà quindi la versione senza ombre fino alla fine dello sviluppo della versione di base del software, nel caso poi avanzi tempo per cercare di migliorare l'accuratezza dell'illuminazione (oltre alle "semplici" ombre) si andrà a riutilizzare la versione ombreggiata.

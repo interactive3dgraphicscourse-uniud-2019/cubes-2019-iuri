@@ -6,6 +6,7 @@
 
 /*CONSTANTS*/
 const BI_FLOOR_TILE_DIM = 1.5;
+const BI_BELOW_TILE_DIM = 0.75;
 const BI_FLOOR_TILE_VARIANCE = 0.4;
 
 /*GEOMETRIES DEFINITIONS*/
@@ -98,6 +99,12 @@ function BigIsland(position, rotation, mat)
 
     //Add the floor to the island
     this.pivot.add(this.floor.pivot);
+
+    //Create the below part of the island
+    this.below = new IslandBelow(new THREE.Vector3(0, -0.75, 0), new THREE.Vector3(0,0,0), mat);
+
+    //Add this part to the island
+    this.pivot.add(this.below.pivot);
     
 }
 
@@ -249,13 +256,49 @@ function TesselFloor(position, rotation, mat)
     {
         for(var i = 0; i < n_tile_side; i++)
         {
-            var random_z_scale = BI_FLOOR_TILE_VARIANCE*(Math.random()*2 -1);
+            var random_y_scale = BI_FLOOR_TILE_VARIANCE*(Math.random()*2 -1);
             this.tiles.push(new THREE.Mesh(bi_floor_tile, mat));
             //this.tiles[j*n_tile_side + i].castShadow = true;
             //this.tiles[j*n_tile_side + i].receiveShadow = true;
-            this.tiles[j*n_tile_side + i].scale.y += random_z_scale;
+            this.tiles[j*n_tile_side + i].scale.y += random_y_scale;
             this.tiles[j*n_tile_side + i].position.x = -7.5 + (BI_FLOOR_TILE_DIM/2) + i*BI_FLOOR_TILE_DIM;
             this.tiles[j*n_tile_side + i].position.z = -7.5 + (BI_FLOOR_TILE_DIM/2) + j*BI_FLOOR_TILE_DIM;
+            this.pivot.add(this.tiles[j*n_tile_side + i]);
+        }
+    }
+}
+
+/*
+@brief: Below part of island contructor
+@param: rotation of the part;
+@param: material of the part;
+*/
+function IslandBelow(position, rotation, mat)
+{
+    var n_tile_side = 15 / BI_BELOW_TILE_DIM;
+
+    this.pivot = new THREE.Object3D();
+    this.pivot.position.x = position.x;
+    this.pivot.position.y = position.y;
+    this.pivot.position.y = position.y;
+    this.pivot.rotation.x = rotation.x;
+    this.pivot.rotation.y = rotation.y;
+    this.pivot.rotation.z = rotation.z;
+
+    this.tiles = [];
+    for(var j = 0; j < n_tile_side; j++)
+    {
+        for(var i = 0; i < n_tile_side; i++)
+        {
+            var this_position = new THREE.Vector3(-7.5 + (BI_BELOW_TILE_DIM/2) + i*BI_BELOW_TILE_DIM, 0, -7.5 + (BI_BELOW_TILE_DIM/2) + j*BI_BELOW_TILE_DIM);
+            var scaling = 30*Math.pow(2.71828, -(0.1*this_position.lengthSq())) + 1;
+            this.tiles.push(new THREE.Mesh(bi_floor_tile, mat));
+            //this.tiles[j*n_tile_side + i].castShadow = true;
+            //this.tiles[j*n_tile_side + i].receiveShadow = true;
+            this.tiles[j*n_tile_side + i].scale.y = scaling;
+            this.tiles[j*n_tile_side + i].position.x = this_position.x;
+            this.tiles[j*n_tile_side + i].position.z = this_position.z;
+            this.tiles[j*n_tile_side + i].position.y = -0.25*scaling;      
             this.pivot.add(this.tiles[j*n_tile_side + i]);
         }
     }
