@@ -16,6 +16,11 @@ function InitGeometries()
     lc_main      = new THREE.BoxGeometry(0.25, 2.5, 0.25);
     lc_capitel   = new THREE.BoxGeometry(0.5, 0.5, 0.5);
 
+    //Big column
+    bc_basement  = new THREE.BoxGeometry(1, 1.5, 1);
+    bc_main      = new THREE.BoxGeometry(0.5, 2.75, 0.5);
+    bc_capitel   = new THREE.BoxGeometry(1, 0.75, 1);
+
     //TODO: rest of geometries!
 }
 
@@ -55,6 +60,17 @@ function BigIsland(position, rotation, mat)
     for(var c = 0; c < this.lcols.length; c++)
         this.pivot.add(this.lcols[c].basement);
 
+    //Create big columns
+    this.bcols = [];
+    this.bcols.push(new BigColumn(new THREE.Vector3(   7, 0, 7), new THREE.Vector3(0,0,0), mat));
+    this.bcols.push(new BigColumn(new THREE.Vector3( 2.5, 0, 7), new THREE.Vector3(0,0,0), mat));
+    this.bcols.push(new BigColumn(new THREE.Vector3(-2.5, 0, 7), new THREE.Vector3(0,0,0), mat));
+    this.bcols.push(new BigColumn(new THREE.Vector3(  -7, 0, 7), new THREE.Vector3(0,0,0), mat));
+
+    //Add big columns to the island
+    for(var c = 0; c < this.bcols.length; c++)
+        this.pivot.add(this.bcols[c].basement);
+    
 }
 
 /*
@@ -88,5 +104,39 @@ function LittleColumn(position, rotation, mat)
     this.capitel.castShadow = true;
     this.capitel.receiveShadow = true;
     this.capitel.position.set(0, 1.5, 0);
+    this.main.add(this.capitel);
+}
+
+/*
+@brief: Big Column constructor function
+@param: position of the column;
+@param: rotation of the column;
+@param: material of the column;
+*/
+function BigColumn(position, rotation, mat)
+{
+    //Basement creation
+    this.basement = new THREE.Mesh(bc_basement, mat);
+    this.basement.castShadow = true;
+    this.basement.receiveShadow = true;
+    this.basement.position.x = position.x;
+    this.basement.position.y = position.y;
+    this.basement.position.z = position.z;
+    this.basement.rotation.x = rotation.x;
+    this.basement.rotation.y = rotation.y;
+    this.basement.rotation.z = rotation.z;
+
+    //Center part creation
+    this.main = new THREE.Mesh(bc_main, mat);
+    this.main.castShadow = true;
+    this.main.receiveShadow = true;
+    this.main.position.set(0, 2.125, 0);
+    this.basement.add(this.main);
+
+    //Capitel creation
+    this.capitel = new THREE.Mesh(bc_capitel, mat);
+    this.capitel.castShadow = true;
+    this.capitel.receiveShadow = true;
+    this.capitel.position.set(0, 1.75, 0);
     this.main.add(this.capitel);
 }
