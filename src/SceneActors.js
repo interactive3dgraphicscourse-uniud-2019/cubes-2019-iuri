@@ -53,11 +53,6 @@ function BigIsland(position, rotation, mat)
     //Create little columns
     this.lcols = [];
     this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3( 1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3(-1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3(-3.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3(-3.5, -0.25,  1.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3(-3.5, -0.25, -1.5), new THREE.Vector3(0,0,0), mat));
     this.lcols.push(new LittleColumn(new THREE.Vector3(-3.5, -0.25, -3.5), new THREE.Vector3(0,0,0), mat));
     this.lcols.push(new LittleColumn(new THREE.Vector3(-1.5, -0.25, -3.5), new THREE.Vector3(0,0,0), mat));
     this.lcols.push(new LittleColumn(new THREE.Vector3( 1.5, -0.25, -3.5), new THREE.Vector3(0,0,0), mat));
@@ -69,20 +64,39 @@ function BigIsland(position, rotation, mat)
     for(var c = 0; c < this.lcols.length; c++)
         this.pivot.add(this.lcols[c].basement);
 
-    //Create big columns
-    this.bcols = [];
-    this.bcols.push(new BigColumn(new THREE.Vector3(   7, 0, 7), new THREE.Vector3(0,0,0), mat));
-    this.bcols.push(new BigColumn(new THREE.Vector3( 2.5, 0, 7), new THREE.Vector3(0,0,0), mat));
-    this.bcols.push(new BigColumn(new THREE.Vector3(-2.5, 0, 7), new THREE.Vector3(0,0,0), mat));
-    this.bcols.push(new BigColumn(new THREE.Vector3(  -7, 0, 7), new THREE.Vector3(0,0,0), mat));
+    //Create broken little columns
+    this.b_lcols = [];
+    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3( 1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat, 1.0));
+    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat, 0.65));
+    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-3.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat, 0.25));
+    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-3.5, -0.25,  1.5), new THREE.Vector3(0,0,0), mat, 0.5));
+    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-3.5, -0.25, -1.5), new THREE.Vector3(0,0,0), mat, 0.75));
 
-    //Add big columns to the island
-    for(var c = 0; c < this.bcols.length; c++)
-        this.pivot.add(this.bcols[c].basement);
+    //Add broken little columns to the island
+    for(var c = 0; c < this.b_lcols.length; c++)
+        this.pivot.add(this.b_lcols[c].basement);
+
+    //Create big column
+    this.bcol = new BigColumn(new THREE.Vector3(-2.5, 0, 7), new THREE.Vector3(0,0,0), mat);
+
+    //Add big column to the island
+    this.pivot.add(this.bcol.basement);
+
+    //Create broken big columns
+    this.b_bcols = [];
+    this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3(   7, 0, 7), new THREE.Vector3(0,0,0), mat, 1.0));
+    this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3( 2.5, 0, 7), new THREE.Vector3(0,0,0), mat, 0.5));
+    this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3(  -7, 0, 7), new THREE.Vector3(0,0,0), mat, 0.3));
+
+    //Add broken big columns to island
+    for(var c = 0; c < this.b_bcols.length; c++)
+        this.pivot.add(this.b_bcols[c].basement);
+
+    //Create the tesselated floor
+    this.floor = new TesselFloor(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), mat);
+    this.floor.pivot.position.y = -0.75;
 
     //Add the floor to the island
-    this.floor = new TesselFloor(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), mat);
-    this.floor.pivot.position.y = -1;
     this.pivot.add(this.floor.pivot);
     
 }
@@ -97,8 +111,8 @@ function LittleColumn(position, rotation, mat)
 {
     //Basement creation
     this.basement = new THREE.Mesh(lc_basement, mat);
-    this.basement.castShadow = true;
-    this.basement.receiveShadow = true;
+    //this.basement.castShadow = true;
+    //this.basement.receiveShadow = true;
     this.basement.position.x = position.x;
     this.basement.position.y = position.y;
     this.basement.position.z = position.z;
@@ -108,17 +122,46 @@ function LittleColumn(position, rotation, mat)
 
     //Center part creation
     this.main = new THREE.Mesh(lc_main, mat);
-    this.main.castShadow = true;
-    this.main.receiveShadow = true;
+    //this.main.castShadow = true;
+    //this.main.receiveShadow = true;
     this.main.position.set(0, 1.75, 0);
     this.basement.add(this.main);
 
     //Capitel creation
     this.capitel = new THREE.Mesh(lc_capitel, mat);
-    this.capitel.castShadow = true;
-    this.capitel.receiveShadow = true;
+    //this.capitel.castShadow = true;
+    //this.capitel.receiveShadow = true;
     this.capitel.position.set(0, 1.5, 0);
     this.main.add(this.capitel);
+}
+
+/*
+@brief: Broken Little Column constructor function
+@param: position of the broken column
+@param: rotation of the broken column
+@param: material of the broken column
+@param: proportional height of the broken column (in respect to height of lc_main)
+*/
+function LittleColumn_Broken(position, rotation, mat, height)
+{
+    //Basement creation
+    this.basement = new THREE.Mesh(lc_basement, mat);
+    //this.basement.castShadow = true;
+    //this.basement.receiveShadow = true;
+    this.basement.position.x = position.x;
+    this.basement.position.y = position.y;
+    this.basement.position.z = position.z;
+    this.basement.rotation.x = rotation.x;
+    this.basement.rotation.y = rotation.y;
+    this.basement.rotation.z = rotation.z;
+
+    //Center part creation
+    this.main = new THREE.Mesh(lc_main, mat);
+    //this.main.castShadow = true;
+    //this.main.receiveShadow = true;
+    this.main.scale.y = height;
+    this.main.position.set(0, 1.5*height, 0);
+    this.basement.add(this.main);
 }
 
 /*
@@ -131,8 +174,8 @@ function BigColumn(position, rotation, mat)
 {
     //Basement creation
     this.basement = new THREE.Mesh(bc_basement, mat);
-    this.basement.castShadow = true;
-    this.basement.receiveShadow = true;
+    //this.basement.castShadow = true;
+    //this.basement.receiveShadow = true;
     this.basement.position.x = position.x;
     this.basement.position.y = position.y;
     this.basement.position.z = position.z;
@@ -142,17 +185,46 @@ function BigColumn(position, rotation, mat)
 
     //Center part creation
     this.main = new THREE.Mesh(bc_main, mat);
-    this.main.castShadow = true;
-    this.main.receiveShadow = true;
+    //this.main.castShadow = true;
+    //this.main.receiveShadow = true;
     this.main.position.set(0, 2.125, 0);
     this.basement.add(this.main);
 
     //Capitel creation
     this.capitel = new THREE.Mesh(bc_capitel, mat);
-    this.capitel.castShadow = true;
-    this.capitel.receiveShadow = true;
+    //this.capitel.castShadow = true;
+    //this.capitel.receiveShadow = true;
     this.capitel.position.set(0, 1.75, 0);
     this.main.add(this.capitel);
+}
+
+/*
+@brief: Broken Big Column constructor function
+@param: position of the broken column
+@param: rotation of the broken column
+@param: material of the broken column
+@param: proportional height of the broken column (in respect to height of lc_main)
+*/
+function BigColumn_Broken(position, rotation, mat, height)
+{
+    //Basement creation
+    this.basement = new THREE.Mesh(bc_basement, mat);
+    //this.basement.castShadow = true;
+    //this.basement.receiveShadow = true;
+    this.basement.position.x = position.x;
+    this.basement.position.y = position.y;
+    this.basement.position.z = position.z;
+    this.basement.rotation.x = rotation.x;
+    this.basement.rotation.y = rotation.y;
+    this.basement.rotation.z = rotation.z;
+
+    //Center part creation
+    this.main = new THREE.Mesh(bc_main, mat);
+    //this.main.castShadow = true;
+    //this.main.receiveShadow = true;
+    this.main.scale.y = height;
+    this.main.position.set(0, 1.75*height, 0);
+    this.basement.add(this.main);
 }
 
 /*
@@ -179,8 +251,8 @@ function TesselFloor(position, rotation, mat)
         {
             var random_z_scale = BI_FLOOR_TILE_VARIANCE*(Math.random()*2 -1);
             this.tiles.push(new THREE.Mesh(bi_floor_tile, mat));
-            this.tiles[j*n_tile_side + i].castShadow = true;
-            this.tiles[j*n_tile_side + i].receiveShadow = true;
+            //this.tiles[j*n_tile_side + i].castShadow = true;
+            //this.tiles[j*n_tile_side + i].receiveShadow = true;
             this.tiles[j*n_tile_side + i].scale.y += random_z_scale;
             this.tiles[j*n_tile_side + i].position.x = -7.5 + (BI_FLOOR_TILE_DIM/2) + i*BI_FLOOR_TILE_DIM;
             this.tiles[j*n_tile_side + i].position.z = -7.5 + (BI_FLOOR_TILE_DIM/2) + j*BI_FLOOR_TILE_DIM;
