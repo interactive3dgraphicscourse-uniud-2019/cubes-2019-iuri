@@ -27,32 +27,11 @@
 		<script>
 		
 		var scene, camera, renderer, controls, stats;
-
-		function Column(position, c_geom, m_geom, b_geom, mat)
-		{
-			this.basement = new THREE.Mesh(b_geom, mat);
-			this.basement.castShadow = true;
-			this.basement.receiveShadow = true;
-			this.basement.position.x = position.x;
-			this.basement.position.y = position.y;
-			this.basement.position.z = position.z;
-
-			this.main = new THREE.Mesh(m_geom, mat);
-			this.main.castShadow = true;
-			this.main.receiveShadow = true;
-			this.main.position.set(0, 1.75, 0);
-			this.basement.add(this.main);
-
-			this.capitel = new THREE.Mesh(c_geom, mat);
-			this.capitel.castShadow = true;
-			this.capitel.receiveShadow = true;
-			this.capitel.position.set(0, 1.5, 0);
-			this.main.add(this.capitel);			
-		}
 		
 		function Start() {
 
 			InitGeometries();
+			InitMaterials();
 
 			scene = new THREE.Scene();
 			scene.background = new THREE.Color("rgb(70%, 70%, 70%)");
@@ -65,16 +44,14 @@
 			renderer.gammaInput = true;
 			renderer.gammaOutput = true;
 			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 			document.body.appendChild( renderer.domElement );
 			
 			camera.position.set(2,2,2);
 			camera.lookAt( new THREE.Vector3(0,0,0));
-			
-			var c_material = new THREE.MeshPhongMaterial();
-			c_material.color.setRGB(1.0, 1.0, 1.0);
 
 			//Test Big Island Pivot
-			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, 0), new THREE.Vector3(0, 0, 0), c_material);
+			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, 0), new THREE.Vector3(0, 0, 0));
 
 			scene.add(bigIsland.pivot);
 
@@ -86,12 +63,18 @@
 
 			dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
 			dirLight.color.setRGB( 0.8, 0.9, 1 );
-			dirLight.position.set( -1, 1.75, 1 );
+			dirLight.position.set( 1, 1.75, 1 );
 			dirLight.position.multiplyScalar( 50 );
 			scene.add( dirLight );
 			dirLight.castShadow = true;
 			dirLight.shadow.mapSize.width = 512;
 			dirLight.shadow.mapSize.height = 512;
+			dirLight.shadow.camera.near = 0.5;
+			dirLight.shadow.camera.far = 200;
+			dirLight.shadow.camera.left = -10;
+			dirLight.shadow.camera.bottom = -10;
+			dirLight.shadow.camera.right = 10;
+			dirLight.shadow.camera.top = 10;
 			
 			stats = new Stats();
 			stats.domElement.style.position = 'absolute';
@@ -104,7 +87,9 @@
 			controls = new THREE.OrbitControls( camera );
 			controls.addEventListener( 'change', Render );
 			
-			
+			//Create a helper for the shadow camera (optional)
+			var helper = new THREE.CameraHelper( dirLight.shadow.camera );
+			scene.add( helper );			
 		}
 		
 		function Update() {

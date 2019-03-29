@@ -9,6 +9,9 @@ const BI_FLOOR_TILE_DIM = 1.5;
 const BI_BELOW_TILE_DIM = 0.75;
 const BI_FLOOR_TILE_VARIANCE = 0.4;
 
+/*MATERIALS DEFINTIONS*/
+var c_mat, f_mat, bp_mat;
+
 /*GEOMETRIES DEFINITIONS*/
 //Little Column
 var lc_basement, lc_main, lc_capitel;
@@ -32,15 +35,26 @@ function InitGeometries()
     //TODO: rest of geometries!
 }
 
+function InitMaterials()
+{
+    c_mat = new THREE.MeshPhongMaterial();
+    c_mat.color.setRGB(1.0, 1.0, 1.0);
+    
+    f_mat = new THREE.MeshPhongMaterial();
+    f_mat.color.setRGB(1.0, 1.0, 1.0);
+    
+    bp_mat = new THREE.MeshPhongMaterial();
+	bp_mat.color.setRGB(1.0, 1.0, 1.0);
+}
+
 /*CONSTRUCTOR FUNCTIONS*/
 
 /*
 @brief: Big Island constructor function
 @param: position of the island
 @param: rotation of the island
-@param: material to be used for the elements of the island
 */
-function BigIsland(position, rotation, mat)
+function BigIsland(position, rotation)
 {
     //Center pivot creation
     this.pivot = new THREE.Object3D();
@@ -53,13 +67,13 @@ function BigIsland(position, rotation, mat)
 
     //Create little columns
     this.lcols = [];
-    this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3(-3.5, -0.25, -3.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3(-1.5, -0.25, -3.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3( 1.5, -0.25, -3.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25, -3.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25, -1.5), new THREE.Vector3(0,0,0), mat));
-    this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25,  1.5), new THREE.Vector3(0,0,0), mat));
+    this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25,  3.5), new THREE.Vector3(0,0,0), c_mat));
+    this.lcols.push(new LittleColumn(new THREE.Vector3(-3.5, -0.25, -3.5), new THREE.Vector3(0,0,0), c_mat));
+    this.lcols.push(new LittleColumn(new THREE.Vector3(-1.5, -0.25, -3.5), new THREE.Vector3(0,0,0), c_mat));
+    this.lcols.push(new LittleColumn(new THREE.Vector3( 1.5, -0.25, -3.5), new THREE.Vector3(0,0,0), c_mat));
+    this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25, -3.5), new THREE.Vector3(0,0,0), c_mat));
+    this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25, -1.5), new THREE.Vector3(0,0,0), c_mat));
+    this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25,  1.5), new THREE.Vector3(0,0,0), c_mat));
     
     //Add little columns to the island
     for(var c = 0; c < this.lcols.length; c++)
@@ -67,41 +81,41 @@ function BigIsland(position, rotation, mat)
 
     //Create broken little columns
     this.b_lcols = [];
-    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3( 1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat, 1.0));
-    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat, 0.65));
-    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-3.5, -0.25,  3.5), new THREE.Vector3(0,0,0), mat, 0.25));
-    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-3.5, -0.25,  1.5), new THREE.Vector3(0,0,0), mat, 0.5));
-    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-3.5, -0.25, -1.5), new THREE.Vector3(0,0,0), mat, 0.75));
+    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3( 1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), c_mat, 1.0));
+    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), c_mat, 0.65));
+    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-3.5, -0.25,  3.5), new THREE.Vector3(0,0,0), c_mat, 0.25));
+    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-3.5, -0.25,  1.5), new THREE.Vector3(0,0,0), c_mat, 0.5));
+    this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-3.5, -0.25, -1.5), new THREE.Vector3(0,0,0), c_mat, 0.75));
 
     //Add broken little columns to the island
     for(var c = 0; c < this.b_lcols.length; c++)
         this.pivot.add(this.b_lcols[c].basement);
 
     //Create big column
-    this.bcol = new BigColumn(new THREE.Vector3(-2.5, 0, 7), new THREE.Vector3(0,0,0), mat);
+    this.bcol = new BigColumn(new THREE.Vector3(-2.5, 0, 7), new THREE.Vector3(0,0,0), c_mat);
 
     //Add big column to the island
     this.pivot.add(this.bcol.basement);
 
     //Create broken big columns
     this.b_bcols = [];
-    this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3(   7, 0, 7), new THREE.Vector3(0,0,0), mat, 1.0));
-    this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3( 2.5, 0, 7), new THREE.Vector3(0,0,0), mat, 0.5));
-    this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3(  -7, 0, 7), new THREE.Vector3(0,0,0), mat, 0.3));
+    this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3(   7, 0, 7), new THREE.Vector3(0,0,0), c_mat, 1.0));
+    this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3( 2.5, 0, 7), new THREE.Vector3(0,0,0), c_mat, 0.5));
+    this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3(  -7, 0, 7), new THREE.Vector3(0,0,0), c_mat, 0.3));
 
     //Add broken big columns to island
     for(var c = 0; c < this.b_bcols.length; c++)
         this.pivot.add(this.b_bcols[c].basement);
 
     //Create the tesselated floor
-    this.floor = new TesselFloor(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), mat);
+    this.floor = new TesselFloor(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), f_mat);
     this.floor.pivot.position.y = -0.75;
 
     //Add the floor to the island
     this.pivot.add(this.floor.pivot);
 
     //Create the below part of the island
-    this.below = new IslandBelow(new THREE.Vector3(0, -0.75, 0), new THREE.Vector3(0,0,0), mat);
+    this.below = new IslandBelow(new THREE.Vector3(0, -0.75, 0), new THREE.Vector3(0,0,0), bp_mat);
 
     //Add this part to the island
     this.pivot.add(this.below.pivot);
@@ -199,8 +213,8 @@ function BigColumn(position, rotation, mat)
 
     //Capitel creation
     this.capitel = new THREE.Mesh(bc_capitel, mat);
-    //this.capitel.castShadow = true;
-    //this.capitel.receiveShadow = true;
+    this.capitel.castShadow = true;
+    this.capitel.receiveShadow = true;
     this.capitel.position.set(0, 1.75, 0);
     this.main.add(this.capitel);
 }
@@ -258,7 +272,6 @@ function TesselFloor(position, rotation, mat)
         {
             var random_y_scale = BI_FLOOR_TILE_VARIANCE*(Math.random()*2 -1);
             this.tiles.push(new THREE.Mesh(bi_floor_tile, mat));
-            //this.tiles[j*n_tile_side + i].castShadow = true;
             //this.tiles[j*n_tile_side + i].receiveShadow = true;
             this.tiles[j*n_tile_side + i].scale.y += random_y_scale;
             this.tiles[j*n_tile_side + i].position.x = -7.5 + (BI_FLOOR_TILE_DIM/2) + i*BI_FLOOR_TILE_DIM;
@@ -293,12 +306,10 @@ function IslandBelow(position, rotation, mat)
             var this_position = new THREE.Vector3(-7.5 + (BI_BELOW_TILE_DIM/2) + i*BI_BELOW_TILE_DIM, 0, -7.5 + (BI_BELOW_TILE_DIM/2) + j*BI_BELOW_TILE_DIM);
             var scaling = 30*Math.pow(2.71828, -(0.1*this_position.lengthSq())) + 1;
             this.tiles.push(new THREE.Mesh(bi_floor_tile, mat));
-            //this.tiles[j*n_tile_side + i].castShadow = true;
-            //this.tiles[j*n_tile_side + i].receiveShadow = true;
             this.tiles[j*n_tile_side + i].scale.y = scaling;
             this.tiles[j*n_tile_side + i].position.x = this_position.x;
             this.tiles[j*n_tile_side + i].position.z = this_position.z;
-            this.tiles[j*n_tile_side + i].position.y = -0.25*scaling;      
+            this.tiles[j*n_tile_side + i].position.y = -0.25*scaling;     
             this.pivot.add(this.tiles[j*n_tile_side + i]);
         }
     }
