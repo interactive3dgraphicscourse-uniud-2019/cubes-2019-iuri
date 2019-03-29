@@ -6,7 +6,7 @@
 
 /*CONSTANTS*/
 const BI_FLOOR_TILE_DIM = 1.5;
-const BI_BASE_TILE_DIM = 0.75;
+const BI_BASE_TILE_DIM = 1;
 const BI_FLOOR_TILE_VARIANCE = 0.4;
 const BI_WALL_BRICK_W = 1;
 const BI_WALL_BRICK_H = 0.5;
