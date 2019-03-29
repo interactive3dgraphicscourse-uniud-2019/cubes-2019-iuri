@@ -45,7 +45,7 @@ Varie viste dell'edifico della prima isola
 Schema con per avere un'idea di come dovrebbe venire la parte inferiore delle isole flottanti (estendere ovviamente in 3D)
 ![Parte inferiore isola](FloatingIsland1.jpg)
 
-## 28/03/2019 - Giorno 3: organizzazione della scena
+## 28/03/2019 - Giorno 3: organizzazione della scena e inizio implementazione
 
 Dopo aver ragionato sull'efficacia dell'approccio "design su UDK e trasposizione su three.js" e a fronte di alcuni test effettuati su three.js, si decide di eliminare il design preliminare su UDK per focalizzarsi sulla relizzazione diretta della scena in javascript.
 Per semplificare tale lavoro è stata scelta la seguente organizzazione gerarchica della scena che permette di ridurre al massimo i gradi di libertà dei singoli oggetti (nel senso di renderne posizioni e rotazioni il più relative possibile) in modo da rendere semplice calcolarne le posizioni all'interno della scena (si passa dal dover calcolare posizioni assolute, che risulta piuttosto difficile vista la complicatezza della scena in oggetto, a posizioni relative che permettono un minor "sforzo" e quindi accelerano lo sviluppo):
@@ -64,3 +64,7 @@ Si vede chiaramente come la prima sembri più realistica ma si nota anche come l
 
 Si manterrà quindi la versione senza ombre fino alla fine dello sviluppo della versione di base del software, nel caso poi avanzi tempo per cercare di migliorare l'accuratezza dell'illuminazione (oltre alle "semplici" ombre) si andrà a riutilizzare la versione ombreggiata.
 Un ulteriore modifica apportata al codice (dovuta a dei test fatti con le ombre) è stata separare i materiali delle varie parti della scena (in precedenza era presente un solo materiale): questo è stato necessario a causa di un bug di threejs nella gestione delle ombre che da problemi quand uno stesso materiale è utilizzato sia per oggetti che ricevono le ombre sia per oggetti che non le ricevono.
+
+## 29/03/2019 - Giorno 4:
+
+Dopo alcuni ragionamenti sulla struttura da dare ai file sorgenti dell'applicazione si è arrivati alla conclusione che non ha senso averne di vari separati in quanto ci si troverebbe poi a doverli includere uno ad uno nel file html finale: per garantire una migliore portabilità dell'applicazione le funzioni che la compongono verrano quindi inserite in un unico file WhiteChapel.js; grazie a questo approccio gli oggetti della scena 3D "dichiarati" in questo file potranno essere riutilizzati in altri progetti threejs senza dover includere uno alla volta i relativi file sorgente.

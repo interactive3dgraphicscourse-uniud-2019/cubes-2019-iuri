@@ -1,20 +1,29 @@
 /********************
- File: SceneActors.js
+ File: WhiteChapel.js
  Author: Marco Iuri
  Date: 28/03/2019
  ********************/
 
 /*CONSTANTS*/
 const BI_FLOOR_TILE_DIM = 1.5;
-const BI_BELOW_TILE_DIM = 0.75;
+const BI_BASE_TILE_DIM = 0.75;
 const BI_FLOOR_TILE_VARIANCE = 0.4;
+const BI_WALL_BRICK_W = 1;
+const BI_WALL_BRICK_H = 0.5;
 
 /*MATERIALS DEFINTIONS*/
-var c_mat, f_mat, bp_mat;
+var c_mat, f_mat, bp_mat, wall_mat;
 
 /*GEOMETRIES DEFINITIONS*/
 //Little Column
 var lc_basement, lc_main, lc_capitel;
+//Big Column
+var bc_basement, bc_main, bc_capitel;
+//Floor and Island Basement
+var bi_floor_tile;
+//Ruined Wall
+var rwall_part1;
+var rwall_bricks;
 
 /*AUXILIARY FUNCTIONS*/
 function InitGeometries()
@@ -32,6 +41,10 @@ function InitGeometries()
     //Big island tessellated floor tile
     bi_floor_tile = new THREE.BoxGeometry(BI_FLOOR_TILE_DIM, 0.5, BI_FLOOR_TILE_DIM);
 
+    //Ruined wall part1 (no-ruined part)
+    rwall_part1 = new THREE.BoxGeometry(0.5, 5, 8);
+    rwall_bricks = new THREE.BoxGeometry(0.6, BI_WALL_BRICK_H, BI_WALL_BRICK_W);
+
     //TODO: rest of geometries!
 }
 
@@ -44,7 +57,10 @@ function InitMaterials()
     f_mat.color.setRGB(1.0, 1.0, 1.0);
     
     bp_mat = new THREE.MeshPhongMaterial();
-	bp_mat.color.setRGB(1.0, 1.0, 1.0);
+    bp_mat.color.setRGB(1.0, 1.0, 1.0);
+    
+    wall_mat = new THREE.MeshPhongMaterial();
+	wall_mat.color.setRGB(1.0, 1.0, 1.0);
 }
 
 /*CONSTRUCTOR FUNCTIONS*/
@@ -115,11 +131,22 @@ function BigIsland(position, rotation)
     this.pivot.add(this.floor.pivot);
 
     //Create the below part of the island
-    this.below = new IslandBelow(new THREE.Vector3(0, -0.75, 0), new THREE.Vector3(0,0,0), bp_mat);
+    this.is_base = new IslandBasement(new THREE.Vector3(0, -0.75, 0), new THREE.Vector3(0,0,0), bp_mat);
 
     //Add this part to the island
-    this.pivot.add(this.below.pivot);
-    
+    this.pivot.add(this.is_base.pivot);
+
+    //Create a first ruined wall
+    this.ruinedWall1 = new RuinedWall(new THREE.Vector3(7.25, 1.75, -3.5), new THREE.Vector3(0 , 0, 0), wall_mat, 3);
+
+    //Add the first wall to the island
+    this.pivot.add(this.ruinedWall1.pivot);
+
+    //Create a first ruined wall
+    this.ruinedWall1 = new RuinedWall(new THREE.Vector3(3.5, 1.75, -7.25), new THREE.Vector3(0, -Math.PI/2, 0), wall_mat, 7);
+
+    //Add the first wall to the island
+    this.pivot.add(this.ruinedWall1.pivot);    
 }
 
 /*
@@ -250,6 +277,7 @@ function BigColumn_Broken(position, rotation, mat, height)
 
 /*
 @brief: Tessellated floor contructor
+@param: position of the floor;
 @param: rotation of the floor;
 @param: material of the floor;
 */
@@ -260,7 +288,7 @@ function TesselFloor(position, rotation, mat)
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
-    this.pivot.position.y = position.y;
+    this.pivot.position.z = position.z;
     this.pivot.rotation.x = rotation.x;
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
@@ -282,18 +310,19 @@ function TesselFloor(position, rotation, mat)
 }
 
 /*
-@brief: Below part of island contructor
-@param: rotation of the part;
-@param: material of the part;
+@brief: Island basement contructor
+@param: position of the basement;
+@param: rotation of the basement;
+@param: material of the basement;
 */
-function IslandBelow(position, rotation, mat)
+function IslandBasement(position, rotation, mat)
 {
-    var n_tile_side = 15 / BI_BELOW_TILE_DIM;
+    var n_tile_side = 15 / BI_BASE_TILE_DIM;
 
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
-    this.pivot.position.y = position.y;
+    this.pivot.position.z = position.z;
     this.pivot.rotation.x = rotation.x;
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
@@ -303,7 +332,7 @@ function IslandBelow(position, rotation, mat)
     {
         for(var i = 0; i < n_tile_side; i++)
         {
-            var this_position = new THREE.Vector3(-7.5 + (BI_BELOW_TILE_DIM/2) + i*BI_BELOW_TILE_DIM, 0, -7.5 + (BI_BELOW_TILE_DIM/2) + j*BI_BELOW_TILE_DIM);
+            var this_position = new THREE.Vector3(-7.5 + (BI_BASE_TILE_DIM/2) + i*BI_BASE_TILE_DIM, 0, -7.5 + (BI_BASE_TILE_DIM/2) + j*BI_BASE_TILE_DIM);
             var scaling = 30*Math.pow(2.71828, -(0.1*this_position.lengthSq())) + 1;
             this.tiles.push(new THREE.Mesh(bi_floor_tile, mat));
             this.tiles[j*n_tile_side + i].scale.y = scaling;
@@ -312,5 +341,56 @@ function IslandBelow(position, rotation, mat)
             this.tiles[j*n_tile_side + i].position.y = -0.25*scaling;     
             this.pivot.add(this.tiles[j*n_tile_side + i]);
         }
+    }
+}
+
+/*
+@brief: Ruined Wall contructor
+@param: position of the wall
+@param: rotation of the wall
+@param: material of the wall
+@param: length of te broken part
+ */
+function RuinedWall(position, rotation, mat, broken_len)
+{
+    this.pivot = new THREE.Object3D();
+    this.pivot.position.x = position.x;
+    this.pivot.position.y = position.y;
+    this.pivot.position.z = position.z;
+    this.pivot.rotation.x = rotation.x;
+    this.pivot.rotation.y = rotation.y;
+    this.pivot.rotation.z = rotation.z;
+
+    //Non-ruined part of the wall
+    this.part1 = new THREE.Mesh(rwall_part1, mat);
+    this.pivot.add(this.part1);
+
+    //Random disaligned bricks
+    this.r_bricks = [];
+    for(var i = 0; i < 10; i++)
+    {
+        //Generate two random indeces in the range [0, (wall_width/brick_width) -1] and [0, (wall_height/brick_height) -1]
+        var rand_i = Math.floor(Math.random() * (8 / BI_WALL_BRICK_W));
+        var rand_j = Math.floor(Math.random() * (5 / BI_WALL_BRICK_H));
+        this.r_bricks[i] = new THREE.Mesh(rwall_bricks, mat);
+        this.r_bricks[i].position.z = -4 + BI_WALL_BRICK_W/2 + rand_i*BI_WALL_BRICK_W;
+        this.r_bricks[i].position.y = +2.5 - BI_WALL_BRICK_H/2 - rand_j*BI_WALL_BRICK_H;
+        this.pivot.add(this.r_bricks[i]);
+    }
+
+    //Broken part of the wall
+    this.part2 = [];
+    for(var i = 0; i < 5 / BI_WALL_BRICK_H ; i++)
+    {
+        var d = 0.25;
+        var c = (broken_len - d) / ((5/BI_WALL_BRICK_H -1)*(5/BI_WALL_BRICK_H -1));
+        var new_len = c*i*i + d;
+        var scaling = new_len / BI_WALL_BRICK_W;
+        this.part2[i] = new THREE.Mesh(rwall_bricks, mat);
+        this.part2[i].scale.z = scaling;
+        this.part2[i].scale.x = 0.83;
+        this.part2[i].position.z = 4 + new_len/2;
+        this.part2[i].position.y = 2.5 - BI_WALL_BRICK_H/2 - i*BI_WALL_BRICK_H;
+        this.pivot.add(this.part2[i]);
     }
 }
