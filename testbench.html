@@ -51,9 +51,12 @@
 			camera.lookAt( new THREE.Vector3(0,0,0));
 
 			//Test Big Island Pivot
-			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, 0), new THREE.Vector3(0, 0, 0));
-
+			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, -15), new THREE.Vector3(0, 0, 0));
 			scene.add(bigIsland.pivot);
+
+			//Test Chapel Pivot
+			var white_chapel = new Chapel(new THREE.Vector3(0,0,15), new THREE.Vector3(0,0,0), white_mat);
+			scene.add(white_chapel.pivot);
 
 			hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
 			hemiLight.color.setRGB( 0.8, 0.9, 1.0);
@@ -63,7 +66,7 @@
 
 			dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
 			dirLight.color.setRGB( 0.8, 0.9, 1 );
-			dirLight.position.set( 1, 1.75, 1 );
+			dirLight.position.set( 0, 1.75, 0.5 );
 			dirLight.position.multiplyScalar( 50 );
 			scene.add( dirLight );
 			dirLight.castShadow = true;
