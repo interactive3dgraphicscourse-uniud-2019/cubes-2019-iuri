@@ -93,7 +93,7 @@ Nella presente giornata si è prceduto a realizzare al scenda isola con la chies
 Sono comunque stati aggiunti due nuovi costruttori, uno per l'oggetto RightTrangle (triangolo rettangolo, utilizzato per realizzare le parti rettangolari della struttura della chiesetta) e uno per l'oggetto ChapelAltar (per realizzare l'altare della chiesetta). In particolare per il costruttore dell'oggetto RightTrangle è stato applicato un approccio simile a quello utilizzato per la parte rotta del RuinedWall sostituendo la funzione quadratica con una lineare.
 
 Il risultato finale è il seguente:
-![Isola con chiesetta](chapel.png)
+![Isola con chiesetta](Chapel.png)
 
 Bozzetti preapratori per la chiesetta:
 ![Bozzetti chiesetta](chapel_sketches.jpg)
