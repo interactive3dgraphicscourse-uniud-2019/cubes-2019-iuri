@@ -64,7 +64,7 @@ Si vede chiaramente come la prima sembri più realistica ma la seconda da maggio
 
 Un ulteriore modifica apportata al codice (dovuta a dei test fatti con le ombre) è stata separare i materiali delle varie parti della scena (in precedenza era presente un solo materiale): questo è stato necessario a causa di un bug di threejs nella gestione delle ombre che da problemi quando uno stesso materiale è utilizzato sia per oggetti che ricevono le ombre sia per oggetti che non le ricevono.
 
-## 29/03/2019 - Giorno 4:
+## 29/03/2019 - Giorno 4: fine realizzazione prima isola
 
 Dopo alcuni ragionamenti sulla struttura da dare ai file sorgenti dell'applicazione si è arrivati alla conclusione che non ha senso averne di vari separati in quanto ci si troverebbe poi a doverli includere uno ad uno nel file html finale: per garantire quindi una migliore portabilità dell'applicazione, le funzioni che la compongono verrano inserite in un unico file WhiteChapel.js: grazie a questo approccio gli oggetti della scena 3D "dichiarati" in questo file potranno essere riutilizzati in altri progetti threejs senza dover includere uno alla volta i relativi file sorgente.
 
@@ -85,3 +85,35 @@ Si fa notare che la lunghezza della parte destra del muro è impostabile come pa
 Di seguito si mostra l'attuale stato dell'isola grande alla quale manca solo un piccolo ponte che la collegherà a quella piccola (le linee visibili sono dovute all'attivazione di un helper per la luce direzionale della scena):
 
 ![Isola grande so-far](BI_v_1.png)
+
+## 31/03/2019 - Giorno 5: realizzazione della seconda isola
+
+Nella presente giornata si è prceduto a realizzare al scenda isola con la chiesetta: non c'è molto da dire su questa parte in quanto sono stati riutilizzati principalmente oggetti già realizzati per l'altra parte della scena; a tal fine si sono apportate piccole modifiche ai costruttori di RuinedWall, TesselFloor e IslandBasement per poterne controllare le dimensioni.
+
+Sono comunque stati aggiunti due nuovi costruttori, uno per l'oggetto RightTrangle (triangolo rettangolo, utilizzato per realizzare le parti rettangolari della struttura della chiesetta) e uno per l'oggetto ChapelAltar (per realizzare l'altare della chiesetta). In particolare per il costruttore dell'oggetto RightTrangle è stato applicato un approccio simile a quello utilizzato per la parte rotta del RuinedWall sostituendo la funzione quadratica con una lineare.
+
+Il risultato finale è il seguente:
+![Isola con chiesetta](chapel.png)
+
+Bozzetti preapratori per la chiesetta:
+![Bozzetti chiesetta](chapel_sketches.jpg)
+
+## 01/04/2019 - Giorno 6: realizzazione del ponte di collegamento
+
+Oggi si andrà a realizzare il ponte di collegamento fra le due isole.
+
+Inizialmente l'idea era di fare un ponte arcuato in rovina (quindi cn alcune parti del pavimento e dei lati mancanti) ma, dopo alcune sperimentazioni, si è deciso di cambiare completamente strada: al fine di dare una maggior sensazione di stranezza allo spettatore si è scelto di cambiare la struttura della scena andando a costruire un ponte che ruota su se stesso di 180° passando dalla isola grande all'isola piccola andando poi a capovolgere la stessa.
+
+Di seguito si possono vedere i bozzetti del ponte con il calcolo delle funzioni necessarie per realizzarlo:
+![Bozzetti ponte](bridge_sketches.jpg)
+
+Dopo averlo implementato in javascript il risultato è il seguente:
+![Ponte](Bridge.png)
+
+
+A questo punto la scena si presenta come segue, mancano solamente i cubi flottanti animati (che verranno aggiunti nella prossima giornata) e il terreno (a proposito del quale ci sarà una nota più sotto):
+![Scena fin'ora](SC_v_1.png)
+Si fa notare che è stata aggiunta una luce speculare alla prima per mantenere il senso di "indifferenza fra sopra e sotto".
+
+NOTA: per il terreno si è pensato di generarne due copie speculari a partire dalla singoa heightmap, una sotto le isole e una sopra così da dare ancora "stordire" ancora di più lo spettatore non facendoli capire qual'è il sopra e qual'è il sotto.
+Inoltre, per rendere maggiormente questa sensazione, si è pensato di eliminare i controlli orbitali e permettere il movimento della camera solo a livello del suolo (comunque questa sarà una cosa più implementata eventualmente alla fine se avanzerà del tempo).

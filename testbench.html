@@ -51,33 +51,36 @@
 			camera.lookAt( new THREE.Vector3(0,0,0));
 
 			//Test Big Island Pivot
-			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, -15), new THREE.Vector3(0, 0, 0));
+			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, -17.5), new THREE.Vector3(0, 0, 0));
 			scene.add(bigIsland.pivot);
 
 			//Test Chapel Pivot
-			var white_chapel = new Chapel(new THREE.Vector3(0,0,15), new THREE.Vector3(0,0,0), white_mat);
+			var white_chapel = new Chapel(new THREE.Vector3(0,0,14.75), new THREE.Vector3(0,0,Math.PI), white_mat);
 			scene.add(white_chapel.pivot);
 
-			hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.6 );
+			//Test Bridge Pivot
+			var bridge = new Bridge(new THREE.Vector3(0,-1,0), new THREE.Vector3(0,0,0), white_mat);
+			scene.add(bridge.pivot);
+
+			hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.5 );
 			hemiLight.color.setRGB( 0.8, 0.9, 1.0);
 			hemiLight.groundColor.setRGB( 0.7, 0.7, 0.7 );
 			hemiLight.position.set( 0, 500, 0 );
 			scene.add( hemiLight );
 
-			dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
-			dirLight.color.setRGB( 0.8, 0.9, 1 );
-			dirLight.position.set( 0, 1.75, 0.5 );
-			dirLight.position.multiplyScalar( 50 );
-			scene.add( dirLight );
-			dirLight.castShadow = true;
-			dirLight.shadow.mapSize.width = 512;
-			dirLight.shadow.mapSize.height = 512;
-			dirLight.shadow.camera.near = 0.5;
-			dirLight.shadow.camera.far = 200;
-			dirLight.shadow.camera.left = -10;
-			dirLight.shadow.camera.bottom = -10;
-			dirLight.shadow.camera.right = 10;
-			dirLight.shadow.camera.top = 10;
+			dirLight1 = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			dirLight1.color.setRGB( 0.8, 0.9, 1 );
+			dirLight1.position.set( 0, 1.75, 0.5 );
+			dirLight1.position.multiplyScalar( 50 );
+			scene.add( dirLight1 );
+			dirLight1.castShadow = true;
+
+			dirLight2 = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			dirLight2.color.setRGB( 0.8, 0.9, 1 );
+			dirLight2.position.set( 0, -1.75, 0.5 );
+			dirLight2.position.multiplyScalar( 50 );
+			scene.add( dirLight2 );
+			dirLight2.castShadow = true;
 			
 			stats = new Stats();
 			stats.domElement.style.position = 'absolute';
@@ -91,8 +94,10 @@
 			controls.addEventListener( 'change', Render );
 			
 			//Create a helper for the shadow camera (optional)
-			var helper = new THREE.CameraHelper( dirLight.shadow.camera );
-			scene.add( helper );			
+			var helper1 = new THREE.CameraHelper( dirLight1.shadow.camera );
+			scene.add( helper1 );
+			var helper2 = new THREE.CameraHelper( dirLight2.shadow.camera );
+			scene.add( helper2 );			
 		}
 		
 		function Update() {

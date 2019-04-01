@@ -25,6 +25,9 @@ var bi_floor_tile;
 //Ruined Wall
 var rwall_part1;
 var rwall_bricks;
+//BridgeComponent
+var bridge_comp1;
+var bridge_comp2
 
 /*AUXILIARY FUNCTIONS*/
 function InitGeometries()
@@ -46,7 +49,9 @@ function InitGeometries()
     rwall_part1 = new THREE.BoxGeometry(0.5, 1, 1);
     rwall_bricks = new THREE.BoxGeometry(0.6, BI_WALL_BRICK_H, BI_WALL_BRICK_W);
 
-    //TODO: rest of geometries!
+    //Bridge component
+    bridge_comp1 = new THREE.BoxGeometry(2, 2, 2);
+    bridge_comp2 = new THREE.BoxGeometry(3, 0.5, 1);
 }
 
 function InitMaterials()
@@ -519,4 +524,74 @@ function RightTriangle(position, rotation, mat, base, height)
         this.bricks[i].position.z = (base - 0.5) - i*0.5;
         this.pivot.add(this.bricks[i]);
     }
+}
+
+/*
+@brief: Bridge constructor
+@param: position of the bridge
+@param: rotation of the bridge
+@param: material of the bridge
+*/
+function Bridge(position, rotation, mat)
+{
+    this.pivot = new THREE.Object3D();
+    this.pivot.position.x = position.x;
+    this.pivot.position.y = position.y;
+    this.pivot.position.z = position.z;
+    this.pivot.rotation.x = rotation.x;
+    this.pivot.rotation.y = rotation.y;
+    this.pivot.rotation.z = rotation.z;
+
+    //Create and add the bridge components
+   this.elements = [];
+   var c = 3/8;
+   var d = -1;
+   for(var i = 0; i < 9; i++)
+   {
+       var this_position = new THREE.Vector3(0, c*i+d, -9 + i*2);
+       var this_rotation = new THREE.Vector3(0, 0, Math.PI/8 * i);
+       this.elements.push(new BridgeComponent(this_position, this_rotation, mat));
+       this.pivot.add(this.elements[i].pivot);
+   }
+}
+
+/*
+@brief: BridgeComponent constructor
+@param: position of the component
+@param: rotation of the component
+@param: material of the component
+*/
+function BridgeComponent(position, rotation, mat)
+{
+    this.pivot = new THREE.Object3D();
+    this.pivot.position.x = position.x;
+    this.pivot.position.y = position.y;
+    this.pivot.position.z = position.z;
+    this.pivot.rotation.x = rotation.x;
+    this.pivot.rotation.y = rotation.y;
+    this.pivot.rotation.z = rotation.z;
+
+    //Create the parts of the bridge component
+    this.lateral_blocks = [];
+    this.lateral_blocks.push(new THREE.Mesh(bridge_comp1, mat));
+    this.lateral_blocks.push(new THREE.Mesh(bridge_comp1, mat));
+    this.lateral_blocks[0].position.x = 2.5;
+    this.lateral_blocks[1].position.x = -2.5;
+    for(var i = 0; i < this.lateral_blocks.length; i++)
+        this.pivot.add(this.lateral_blocks[i]);
+    
+    this.central_blocks = [];
+    this.central_blocks.push(new THREE.Mesh(bridge_comp2, mat));
+    this.central_blocks.push(new THREE.Mesh(bridge_comp2, mat));
+    this.central_blocks[0].position.z = -0.5;
+    this.central_blocks[1].position.z = 0.5;
+    this.central_blocks[1].position.y = 0.375;
+    for(var i = 0; i < this.central_blocks.length; i++)
+        this.pivot.add(this.central_blocks[i]);
+
+    this.columns = [];
+    this.columns.push(new LittleColumn(new THREE.Vector3(2.5, 1.5, 0), new THREE.Vector3(0,0,0), mat));
+    this.columns.push(new LittleColumn(new THREE.Vector3(-2.5, 1.5, 0), new THREE.Vector3(0,0,0), mat));
+    for(var i = 0; i < this.columns.length; i++)
+        this.pivot.add(this.columns[i].basement);
 }
