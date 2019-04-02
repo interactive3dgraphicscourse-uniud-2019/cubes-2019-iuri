@@ -28,6 +28,8 @@ var rwall_bricks;
 //BridgeComponent
 var bridge_comp1;
 var bridge_comp2
+//MovingCube
+var mov_cube;
 
 /*AUXILIARY FUNCTIONS*/
 function InitGeometries()
@@ -52,6 +54,9 @@ function InitGeometries()
     //Bridge component
     bridge_comp1 = new THREE.BoxGeometry(2, 2, 2);
     bridge_comp2 = new THREE.BoxGeometry(3, 0.5, 1);
+
+    //MovingCube
+    mov_cube = new THREE.BoxGeometry(1, 1, 1);
 }
 
 function InitMaterials()
@@ -79,7 +84,7 @@ function BigIsland(position, rotation)
     this.pivot.rotation.z = rotation.z;
 
     //Create little columns
-    this.lcols = [];
+    this.lcols = new Array();
     this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25,  3.5), new THREE.Vector3(0,0,0), white_mat));
     this.lcols.push(new LittleColumn(new THREE.Vector3(-3.5, -0.25, -3.5), new THREE.Vector3(0,0,0), white_mat));
     this.lcols.push(new LittleColumn(new THREE.Vector3(-1.5, -0.25, -3.5), new THREE.Vector3(0,0,0), white_mat));
@@ -93,7 +98,7 @@ function BigIsland(position, rotation)
         this.pivot.add(this.lcols[c].basement);
 
     //Create broken little columns
-    this.b_lcols = [];
+    this.b_lcols = new Array();
     this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3( 1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), white_mat, 1.0));
     this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), white_mat, 0.65));
     this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-3.5, -0.25,  3.5), new THREE.Vector3(0,0,0), white_mat, 0.25));
@@ -111,7 +116,7 @@ function BigIsland(position, rotation)
     this.pivot.add(this.bcol.basement);
 
     //Create broken big columns
-    this.b_bcols = [];
+    this.b_bcols = new Array();
     this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3(   7, 0, 7), new THREE.Vector3(0,0,0), white_mat, 1.0));
     this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3( 2.5, 0, 7), new THREE.Vector3(0,0,0), white_mat, 0.5));
     this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3(  -7, 0, 7), new THREE.Vector3(0,0,0), white_mat, 0.3));
@@ -272,7 +277,7 @@ function TesselFloor(position, rotation, mat, width, depth, tile_size)
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
 
-    this.tiles = [];
+    this.tiles = new Array();
     for(var j = 0; j < n_tile_side_z; j++)
     {
         for(var i = 0; i < n_tile_side_x; i++)
@@ -309,7 +314,7 @@ function IslandBasement(position, rotation, mat, width, depth, height)
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
 
-    this.tiles = [];
+    this.tiles = new Array();
     for(var j = 0; j < n_tile_side_z; j++)
     {
         for(var i = 0; i < n_tile_side_x; i++)
@@ -352,7 +357,7 @@ function RuinedWall(position, rotation, mat, length, height, broken_len)
     this.pivot.add(this.part1);
 
     //Random disaligned bricks
-    this.r_bricks = [];
+    this.r_bricks = new Array();
     for(var i = 0; i < 10; i++)
     {
         //Generate two random indeces in the range [0, (wall_width/brick_width) -1] and [0, (wall_height/brick_height) -1]
@@ -365,7 +370,7 @@ function RuinedWall(position, rotation, mat, length, height, broken_len)
     }
 
     //Broken part of the wall
-    this.part2 = [];
+    this.part2 = new Array();
     if(broken_len > 0)
     {
         for(var i = 0; i < height / BI_WALL_BRICK_H ; i++)
@@ -409,7 +414,7 @@ function Chapel(position, rotation, mat)
     this.pivot.add(this.altar.pivot);
 
     //Four column
-    this.cols = [];
+    this.cols = new Array();
     this.cols[0] = new LittleColumn(new THREE.Vector3( 1.5, 0.75,  1.5), new THREE.Vector3(0,0,0), mat);
     this.cols[1] = new LittleColumn(new THREE.Vector3(-1.5, 0.75,  1.5), new THREE.Vector3(0,0,0), mat);
     this.cols[2] = new LittleColumn(new THREE.Vector3(-1.5, 0.75, -2.5), new THREE.Vector3(0,0,0), mat);
@@ -442,7 +447,7 @@ function Chapel(position, rotation, mat)
     this.pivot.add(this.front_wall_center.pivot);
 
     //Triangular parts of the structure
-    this.tris = [];
+    this.tris = new Array();
     this.tris.push(new RightTriangle(new THREE.Vector3(-1.25, 4, -5.5), new THREE.Vector3(0, -Math.PI/2, 0), mat, 2.5, 1.5));
     this.tris.push(new RightTriangle(new THREE.Vector3(1.25, 4, -5.5), new THREE.Vector3(0, Math.PI/2, 0), mat, 2.5, 1.5));
     this.tris.push(new RightTriangle(new THREE.Vector3(0, 7, -5.5), new THREE.Vector3(0, Math.PI/2.0, 0), mat, 1, 1));
@@ -508,7 +513,7 @@ function RightTriangle(position, rotation, mat, base, height)
 
 
     //Generate the triangle starting of wall bricks geometry
-    this.bricks = [];
+    this.bricks = new Array();
     for(var i = 0; i < base / 0.5; i++)
     {
         var d = 0.5;
@@ -543,7 +548,7 @@ function Bridge(position, rotation, mat)
     this.pivot.rotation.z = rotation.z;
 
     //Create and add the bridge components
-   this.elements = [];
+   this.elements = new Array();
    var c = 3/8;
    var d = -1;
    for(var i = 0; i < 9; i++)
@@ -572,7 +577,7 @@ function BridgeComponent(position, rotation, mat)
     this.pivot.rotation.z = rotation.z;
 
     //Create the parts of the bridge component
-    this.lateral_blocks = [];
+    this.lateral_blocks = new Array();
     this.lateral_blocks.push(new THREE.Mesh(bridge_comp1, mat));
     this.lateral_blocks.push(new THREE.Mesh(bridge_comp1, mat));
     this.lateral_blocks[0].position.x = 2.5;
@@ -580,7 +585,7 @@ function BridgeComponent(position, rotation, mat)
     for(var i = 0; i < this.lateral_blocks.length; i++)
         this.pivot.add(this.lateral_blocks[i]);
     
-    this.central_blocks = [];
+    this.central_blocks = new Array();
     this.central_blocks.push(new THREE.Mesh(bridge_comp2, mat));
     this.central_blocks.push(new THREE.Mesh(bridge_comp2, mat));
     this.central_blocks[0].position.z = -0.5;
@@ -589,9 +594,35 @@ function BridgeComponent(position, rotation, mat)
     for(var i = 0; i < this.central_blocks.length; i++)
         this.pivot.add(this.central_blocks[i]);
 
-    this.columns = [];
+    this.columns = new Array();
     this.columns.push(new LittleColumn(new THREE.Vector3(2.5, 1.5, 0), new THREE.Vector3(0,0,0), mat));
     this.columns.push(new LittleColumn(new THREE.Vector3(-2.5, 1.5, 0), new THREE.Vector3(0,0,0), mat));
     for(var i = 0; i < this.columns.length; i++)
         this.pivot.add(this.columns[i].basement);
+}
+
+/*
+@brief: MovingCube constructor
+@param: initial position of the cube
+@param: initial rotation of the cube
+@param: material of the cube
+@param: velocity magnitude
+@param: movement direction
+*/
+function MovingCube(position, rotation, mat, vel_mag, vel_dir)
+{
+    this.mesh = new THREE.Mesh(mov_cube, mat);
+    this.mesh.position.x = position.x;
+    this.mesh.position.y = position.y;
+    this.mesh.position.z = position.z;
+    this.mesh.rotation.x = rotation.x;
+    this.mesh.rotation.y = rotation.y;
+    this.mesh.rotation.z = rotation.z;
+
+    this.velocity_mag = vel_mag;
+    this.velocity_dir = new THREE.Vector3();
+    this.velocity_dir.x = vel_dir.x;
+    this.velocity_dir.y = vel_dir.y;
+    this.velocity_dir.z = vel_dir.z;
+    this.velocity_dir.normalize();
 }

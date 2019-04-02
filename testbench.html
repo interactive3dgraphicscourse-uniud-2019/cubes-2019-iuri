@@ -26,7 +26,8 @@
 		
 		<script>
 		
-		var scene, camera, renderer, controls, stats;
+		var scene, camera, renderer, controls, stats, time, old_frame, this_frame;
+		var randomCubes;
 		
 		function Start() {
 
@@ -50,17 +51,23 @@
 			camera.position.set(2,2,2);
 			camera.lookAt( new THREE.Vector3(0,0,0));
 
-			//Test Big Island Pivot
+			//Big Island creation
 			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, -17.5), new THREE.Vector3(0, 0, 0));
 			scene.add(bigIsland.pivot);
 
-			//Test Chapel Pivot
+			//Chapel creation
 			var white_chapel = new Chapel(new THREE.Vector3(0,0,14.75), new THREE.Vector3(0,0,Math.PI), white_mat);
 			scene.add(white_chapel.pivot);
 
-			//Test Bridge Pivot
+			//Bridge creation
 			var bridge = new Bridge(new THREE.Vector3(0,-1,0), new THREE.Vector3(0,0,0), white_mat);
 			scene.add(bridge.pivot);
+
+			//Random cube creation
+			var cubes_velocity = 0.001;
+			randomCubes = CreateRandomCubes(5000, white_mat, cubes_velocity);
+			for(var i = 0; i < randomCubes.length; i++)
+				scene.add(randomCubes[i].mesh);
 
 			hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.5 );
 			hemiLight.color.setRGB( 0.8, 0.9, 1.0);
@@ -97,7 +104,10 @@
 			var helper1 = new THREE.CameraHelper( dirLight1.shadow.camera );
 			scene.add( helper1 );
 			var helper2 = new THREE.CameraHelper( dirLight2.shadow.camera );
-			scene.add( helper2 );			
+			scene.add( helper2 );	
+			
+			old_frame = Date.now();
+			this_frame = 0;
 		}
 		
 		function Update() {
@@ -109,7 +119,61 @@
 		
 		function Render() {
 			
+			this_frame = Date.now();
+			time = this_frame - old_frame;
+			old_frame = this_frame;
+
+			UpdateRandomCubes(time);
+
 			renderer.render(scene, camera);
+		}
+
+		function CreateRandomCubes(num_cubes, mat, cubes_vel)
+		{
+			var cubes = new Array();
+
+			for(var i = 0; i < num_cubes; i++)
+			{
+				var rand_x;
+				var rand_y;
+				var rand_z;
+				
+				var done = false;
+				while(!done)
+				{
+					rand_x = Math.random()*200 - 100;
+					rand_y = Math.random()*200 - 100;
+					rand_z = Math.random()*200 - 100;
+
+					done = !((rand_x < 8 && rand_x > -8) && (rand_y < 10 && rand_y > -10) && (rand_z < 25 && rand_z > -30));
+				}
+
+				var rand_v_x = Math.random()*2 -1;
+				var rand_v_y = Math.random()*2 -1;
+				var rand_v_z = Math.random()*2 -1;
+
+				cubes.push(new MovingCube(new THREE.Vector3(rand_x, rand_y, rand_z), new THREE.Vector3(0,0,0), mat, cubes_vel, new THREE.Vector3(rand_v_x, rand_v_y, rand_v_z)));
+			}
+
+			return cubes
+		}
+
+		function UpdateRandomCubes(time_passed)
+		{
+			for(var i = 0; i < randomCubes.length; i++)
+			{
+				randomCubes[i].mesh.position.x += randomCubes[i].velocity_dir.x * randomCubes[i].velocity_mag * time_passed;
+				randomCubes[i].mesh.position.y += randomCubes[i].velocity_dir.y * randomCubes[i].velocity_mag * time_passed;
+				randomCubes[i].mesh.position.z += randomCubes[i].velocity_dir.z * randomCubes[i].velocity_mag * time_passed;
+
+				if((randomCubes[i].mesh.position.x > 100 || randomCubes[i].mesh.position.y > 100 || randomCubes[i].mesh.position.z > 100) ||
+				   ((randomCubes[i].mesh.position.x < 8 && randomCubes[i].mesh.position.x > -8) && 
+					(randomCubes[i].mesh.position.y < 10 && randomCubes[i].mesh.position.y > -10) && 
+					(randomCubes[i].mesh.position.z < 25 && randomCubes[i].mesh.position.z > -30)))
+				{
+					randomCubes[i].velocity_mag = -randomCubes[i].velocity_mag;
+				}
+			}
 		}
 		
 		Start();
