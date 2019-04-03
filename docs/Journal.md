@@ -117,3 +117,20 @@ Si fa notare che è stata aggiunta una luce speculare alla prima per mantenere i
 
 NOTA: per il terreno si è pensato di generarne due copie speculari a partire dalla singoa heightmap, una sotto le isole e una sopra così da dare ancora "stordire" ancora di più lo spettatore non facendoli capire qual'è il sopra e qual'è il sotto.
 Inoltre, per rendere maggiormente questa sensazione, si è pensato di eliminare i controlli orbitali e permettere il movimento della camera solo a livello del suolo (comunque questa sarà una cosa più implementata eventualmente alla fine se avanzerà del tempo).
+
+## 02/04/2019 e 03/04/2019 - Giorni 7 e 8: gestione dei cubi casuali animati
+
+In queste due giornate si è proceduto ad implementare il costruttore dei cubi casuali e le funzioni di animazione degli stessi.
+Ogni cubo viene generato in una posizione casuale con una velocità diretta casualmente ma con ampiezza uguale a quella degli altri cubi, quando avviene una collisione fra due cubi vengono calcolate le direzioni di uscita dalla collisione ma le velocità rimangono, in modulo, le stesse.
+Inoltre, per evitare compenetrazioni con gli elementi principali della scena, si è resa "off-limits" l'area centrale facendo sì che ad ogni cubo che si avvicina ad essa venga invertita la direzione (un approccio analogo è stato utilizzato per costringere i cubi all'interno di un volume predeterminato in modo che non si perdano tutti all'infinito).
+
+Particolarmente complicata è stata la gestione delle collisioni fra i cubi, in particolare la determinazione delle velocità di uscita (ciò ha portto il lavoro a prendere un giorno in più di quanto preventivato): alla fine si è optato per il seguente algoritmo:
+
+1.  Calcola il vettore distanza fra il second cubo e il primo;
+2.  Calcola i componenti delle velocità dei due cubi rispetto al vettore distanza appena calcolato (cube_a_comp, cube_b_comp);
+3.  Calcola le velocità di uscita tramite le formule:
+    * v1out = v1in + (cube_b_comp - cube_a_comp)*distance_vector;
+    * v2out = v2in + (cube_a_comp - cube_b_comp)*distance_vector;
+4. Normalizza le velocità ottenute (ricordiamo che sono direzioni, il modulo della velocità lo vogliamo costante);
+
+Il numero di cubi in scena nella versione attuale è 1000 in un volume di lato 100, volendo si potrebbero utilizzare un numero di cubi più grande ma questo porterebbe ad un conseguente calo delle prestazioni dovuto alla ricerca delle collisioni.

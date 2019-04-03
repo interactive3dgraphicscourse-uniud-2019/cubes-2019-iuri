@@ -611,6 +611,7 @@ function BridgeComponent(position, rotation, mat)
 */
 function MovingCube(position, rotation, mat, vel_mag, vel_dir)
 {
+    //Create the cube mesh
     this.mesh = new THREE.Mesh(mov_cube, mat);
     this.mesh.position.x = position.x;
     this.mesh.position.y = position.y;
@@ -619,6 +620,7 @@ function MovingCube(position, rotation, mat, vel_mag, vel_dir)
     this.mesh.rotation.y = rotation.y;
     this.mesh.rotation.z = rotation.z;
 
+    //Assign velocity parameters
     this.velocity_mag = vel_mag;
     this.velocity_dir = new THREE.Vector3();
     this.velocity_dir.x = vel_dir.x;
