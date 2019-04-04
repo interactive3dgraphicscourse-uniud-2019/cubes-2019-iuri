@@ -1,0 +1,230 @@
+<html>
+	<head>
+		<title>Testbench</title>
+		<style>
+		
+		body {
+			font-family: Monospace;
+			background-color: #f0f0f0;
+			margin: 0px;
+			overflow: hidden;
+		}
+		
+		canvas { 
+			width: 100%; 
+			height: 100%;
+		}
+	
+	</style>
+		<script src="lib/three.min.js"></script>
+		<script src="lib/stats.min.js"></script>
+		<script src="lib/Coordinates.js"></script>
+		<script src="lib/OrbitControls.js"></script>
+		<script src="src/WhiteChapel.js"></script>
+	</head>
+	<body>
+		
+		<script>
+		
+		var scene, camera, renderer, controls, stats, time, old_frame, this_frame;
+		var randomCubes, vol_dim = 100;
+		var EPS = 0.1;
+		
+		function Start() {
+
+			InitGeometries();
+			InitMaterials();
+
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color("rgb(0%, 0%, 0%)"); //80, 90, 100
+			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+			renderer = new THREE.WebGLRenderer( {antialias: true} );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setClearColor( 0xf0f0f0 );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.gammaInput = true;
+			renderer.gammaOutput = true;
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			document.body.appendChild( renderer.domElement );
+			
+			camera.position.set(2,2,2);
+			camera.lookAt( new THREE.Vector3(0,0,0));
+
+			//Big Island creation
+			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, -17.5), new THREE.Vector3(0, 0, 0));
+			scene.add(bigIsland.pivot);
+
+			//Chapel creation
+			var white_chapel = new Chapel(new THREE.Vector3(0,0,14.75), new THREE.Vector3(0,0,Math.PI), white_mat);
+			scene.add(white_chapel.pivot);
+
+			//Bridge creation
+			var bridge = new Bridge(new THREE.Vector3(0,-1,0), new THREE.Vector3(0,0,0), white_mat);
+			scene.add(bridge.pivot);
+
+			//Random cube creation
+			var cubes_velocity = 0.001;
+			randomCubes = CreateRandomCubes(1000, white_mat, cubes_velocity, vol_dim);
+			for(var i = 0; i < randomCubes.length; i++)
+			{
+				scene.add(randomCubes[i].mesh);
+			}
+
+			hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.5 );
+			hemiLight.color.setRGB( 0.0, 0.0, 0.0);
+			hemiLight.groundColor.setRGB( 0.7, 0.7, 0.7 );
+			hemiLight.position.set( 0, 500, 0 );
+			scene.add( hemiLight );
+
+			dirLight1 = new THREE.DirectionalLight( 0xffffff, 0.7 );
+			dirLight1.color.setRGB( 1, 1, 1 );
+			dirLight1.position.set( 0, 1.75, 0.5 );
+			dirLight1.position.multiplyScalar( 50 );
+			scene.add( dirLight1 );
+			dirLight1.castShadow = true;
+
+			dirLight2 = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			dirLight2.color.setRGB( 1, 1, 1 );
+			dirLight2.position.set( 0, -1.75, 0.5 );
+			dirLight2.position.multiplyScalar( 50 );
+			scene.add( dirLight2 );
+			dirLight2.castShadow = true;
+			
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			document.body.appendChild( stats.domElement );
+			
+			controls = new THREE.OrbitControls( camera );
+			controls.addEventListener( 'change', Render );
+			
+			old_frame = Date.now();
+			this_frame = 0;
+		}
+		
+		function Update() {
+			requestAnimationFrame( Update );
+			controls.update();  
+			stats.update();
+			Render();
+		}
+		
+		function Render() {
+			
+			this_frame = Date.now();
+			time = this_frame - old_frame;
+			old_frame = this_frame;
+
+			UpdateRandomCubes(time, vol_dim);
+
+			renderer.render(scene, camera);
+		}
+
+		function CreateRandomCubes(num_cubes, mat, cubes_vel, volume_dim)
+		{
+			var cubes = new Array();
+
+			for(var i = 0; i < num_cubes; i++)
+			{
+				var rand_x;
+				var rand_y;
+				var rand_z;
+				
+				var done = false;
+				while(!done)
+				{
+					rand_x = Math.random()*volume_dim - volume_dim/2;
+					rand_y = Math.random()*volume_dim - volume_dim/2;
+					rand_z = Math.random()*volume_dim - volume_dim/2;
+
+					done = !((rand_x < 8 && rand_x > -8) && (rand_y < 10 && rand_y > -10) && (rand_z < 25 && rand_z > -30));
+				}
+
+				var rand_v_x = Math.random()*2 -1;
+				var rand_v_y = Math.random()*2 -1;
+				var rand_v_z = Math.random()*2 -1;
+
+				cubes.push(new MovingCube(new THREE.Vector3(rand_x, rand_y, rand_z), new THREE.Vector3(0,0,0), mat, cubes_vel, new THREE.Vector3(rand_v_x, rand_v_y, rand_v_z)));
+			}
+
+			return cubes
+		}
+
+		function UpdateRandomCubes(time_passed, volume_dim)
+		{		
+			for(var i = 0; i < randomCubes.length; i++)
+			{
+				var coll = CalculateCubeCollision(i);
+
+				if((Math.abs(randomCubes[i].mesh.position.x) >= volume_dim/2 || Math.abs(randomCubes[i].mesh.position.y) >= volume_dim/2 || Math.abs(randomCubes[i].mesh.position.z) >= volume_dim/2) ||
+				   ((Math.abs(randomCubes[i].mesh.position.x) <= 8) && (Math.abs(randomCubes[i].mesh.position.y) <= 10+EPS) && (Math.abs(randomCubes[i].mesh.position.z) <= 30 )))
+				{
+					randomCubes[i].velocity_dir.x *= -1.0;
+					randomCubes[i].velocity_dir.y *= -1.0;
+					randomCubes[i].velocity_dir.z *= -1.0;
+				}
+				else if(coll.has_collided)
+				{
+					//Determine the position of the two cubes
+					var pos1 = new THREE.Vector3();
+					var pos2 = new THREE.Vector3();
+					pos1.x = randomCubes[i].mesh.position.x;
+					pos1.y = randomCubes[i].mesh.position.y;
+					pos1.z = randomCubes[i].mesh.position.z;
+					pos2.x = randomCubes[coll.cube_idx].mesh.position.x;
+					pos2.y = randomCubes[coll.cube_idx].mesh.position.y;
+					pos2.z = randomCubes[coll.cube_idx].mesh.position.z;
+
+					//Calculate the distance vector between the twe positions
+					var collision = new THREE.Vector3();
+					collision.subVectors(pos2, pos1);
+					var distance = collision.length();
+
+					//handle of two cube generated in the same place
+					if(distance == 0)
+					{
+						collision = new THREE.Vector3(1.0, 0.0, 0.0);
+						distance = 1.0;
+					}
+					
+					collision.normalize();
+					//calculate the compoments of the two velocity of the cubes wich are parallel to the collision vector
+					var this_pc = randomCubes[i].velocity_dir.dot(collision);
+					var seco_pc = randomCubes[coll.cube_idx].velocity_dir.dot(collision);
+
+					//calculate the output velocities 
+					randomCubes[i].velocity_dir.addVectors(randomCubes[i].velocity_dir, collision.multiplyScalar((seco_pc - this_pc)));
+					randomCubes[coll.cube_idx].velocity_dir.addVectors(randomCubes[coll.cube_idx].velocity_dir, collision.multiplyScalar((this_pc - seco_pc)));
+
+					randomCubes[i].velocity_dir.normalize();
+					randomCubes[coll.cube_idx].velocity_dir.normalize();
+				}
+
+				randomCubes[i].mesh.position.x += randomCubes[i].velocity_dir.x * randomCubes[i].velocity_mag * time_passed;
+				randomCubes[i].mesh.position.y += randomCubes[i].velocity_dir.y * randomCubes[i].velocity_mag * time_passed;
+				randomCubes[i].mesh.position.z += randomCubes[i].velocity_dir.z * randomCubes[i].velocity_mag * time_passed;	
+					
+			}
+		}
+
+		function CalculateCubeCollision(f_c)
+		{
+			for(var s_c = 0; s_c < randomCubes.length; s_c++)
+			{
+				if((Math.abs(randomCubes[s_c].mesh.position.x - randomCubes[f_c].mesh.position.x) <= 1.0) &&
+				   (Math.abs(randomCubes[s_c].mesh.position.y - randomCubes[f_c].mesh.position.y) <= 1.0) &&
+				   (Math.abs(randomCubes[s_c].mesh.position.z - randomCubes[f_c].mesh.position.z) <= 1.0) && s_c != f_c)
+					return {"has_collided": true, "cube_idx": s_c};
+			}
+
+			return {"has collided": false, "cube_idx": -1};
+		}
+		
+		Start();
+		Update();
+			
+		</script>
+	</body>
+</html>
