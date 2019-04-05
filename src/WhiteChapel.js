@@ -35,28 +35,28 @@ var mov_cube;
 function InitGeometries()
 {
     //Little column
-    lc_basement  = new THREE.BoxGeometry(0.5, 1, 0.5);
-    lc_main      = new THREE.BoxGeometry(0.25, 2.5, 0.25);
-    lc_capitel   = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    lc_basement  = new THREE.BoxBufferGeometry(0.5, 1, 0.5);
+    lc_main      = new THREE.BoxBufferGeometry(0.25, 2.5, 0.25);
+    lc_capitel   = new THREE.BoxBufferGeometry(0.5, 0.5, 0.5);
 
     //Big column
-    bc_basement  = new THREE.BoxGeometry(1, 1.5, 1);
-    bc_main      = new THREE.BoxGeometry(0.5, 2.75, 0.5);
-    bc_capitel   = new THREE.BoxGeometry(1, 0.75, 1);
+    bc_basement  = new THREE.BoxBufferGeometry(1, 1.5, 1);
+    bc_main      = new THREE.BoxBufferGeometry(0.5, 2.75, 0.5);
+    bc_capitel   = new THREE.BoxBufferGeometry(1, 0.75, 1);
 
     //Big island tessellated floor tile
-    bi_floor_tile = new THREE.BoxGeometry(BI_FLOOR_TILE_DIM, 0.5, BI_FLOOR_TILE_DIM);
+    bi_floor_tile = new THREE.BoxBufferGeometry(BI_FLOOR_TILE_DIM, 0.5, BI_FLOOR_TILE_DIM);
 
     //Ruined wall part1 (no-ruined part)
-    rwall_part1 = new THREE.BoxGeometry(0.5, 1, 1);
-    rwall_bricks = new THREE.BoxGeometry(0.6, BI_WALL_BRICK_H, BI_WALL_BRICK_W);
+    rwall_part1 = new THREE.BoxBufferGeometry(0.5, 1, 1);
+    rwall_bricks = new THREE.BoxBufferGeometry(0.6, BI_WALL_BRICK_H, BI_WALL_BRICK_W);
 
     //Bridge component
-    bridge_comp1 = new THREE.BoxGeometry(2, 2, 2);
-    bridge_comp2 = new THREE.BoxGeometry(3, 0.5, 1);
+    bridge_comp1 = new THREE.BoxBufferGeometry(2, 2, 2);
+    bridge_comp2 = new THREE.BoxBufferGeometry(3, 0.5, 1);
 
     //MovingCube
-    mov_cube = new THREE.BoxGeometry(1, 1, 1);
+    mov_cube = new THREE.BoxBufferGeometry(1, 1, 1);
 }
 
 function InitMaterials()
@@ -202,6 +202,7 @@ function LittleColumn_Broken(position, rotation, mat, height)
     this.main.scale.y = height;
     this.main.position.set(0, 1.5*height, 0);
     this.basement.add(this.main);
+    
 }
 
 /*
@@ -224,7 +225,6 @@ function BigColumn(position, rotation, mat)
     //Center part creation
     this.main = new THREE.Mesh(bc_main, mat);
     this.main.position.set(0, 2.125, 0);
-    this.basement.add(this.main);
 
     //Capitel creation
     this.capitel = new THREE.Mesh(bc_capitel, mat);
@@ -481,12 +481,12 @@ function ChapelAltar(position, rotation, mat)
     this.pivot.rotation.z = rotation.z;
 
     //Upper plane
-    var plane_geom = new THREE.BoxGeometry(3, 0.25, 1.5);
+    var plane_geom = new THREE.BoxBufferGeometry(3, 0.25, 1.5);
     this.upper_plane = new THREE.Mesh(plane_geom, mat);
     this.pivot.add(this.upper_plane);
 
     //Basement
-    var base_geom = new THREE.BoxGeometry(2, 0.75, 1);
+    var base_geom = new THREE.BoxBufferGeometry(2, 0.75, 1);
     this.basement = new THREE.Mesh(base_geom, mat);
     this.basement.position.z = 0.25;
     this.basement.position.y = -0.5;
@@ -583,7 +583,9 @@ function BridgeComponent(position, rotation, mat)
     this.lateral_blocks[0].position.x = 2.5;
     this.lateral_blocks[1].position.x = -2.5;
     for(var i = 0; i < this.lateral_blocks.length; i++)
+    {
         this.pivot.add(this.lateral_blocks[i]);
+    }
     
     this.central_blocks = new Array();
     this.central_blocks.push(new THREE.Mesh(bridge_comp2, mat));
@@ -627,4 +629,42 @@ function MovingCube(position, rotation, mat, vel_mag, vel_dir)
     this.velocity_dir.y = vel_dir.y;
     this.velocity_dir.z = vel_dir.z;
     this.velocity_dir.normalize();
+}
+
+/*
+@brief: Terrain constructor
+@param: height data to calculate the height of the cubes that make the terrain
+@param: image from which the height data are retrieved
+@param: desired depth of the terrain's base
+@param: desired width of the terrain's base
+@param: position of the terrain
+@param: rotation of the terrain
+@param: material of the terrain
+*/
+function Terrain(heightdata, image, terr_width, terr_depth, position, rotation, mat)
+{
+	this.pivot = new THREE.Object3D();
+	this.pivot.position.x = position.x;
+	this.pivot.position.y = position.y;
+    this.pivot.position.z = position.z;
+    this.pivot.rotation.x = rotation.x;
+    this.pivot.rotation.y = rotation.y;
+    this.pivot.rotation.z = rotation.z;
+
+	this.boxes = new Array();
+
+    for(var i = 0; i < image.width; i++)
+    	for(var j = 0; j < image.height; j++)
+			{
+	    		var cube_width = terr_width/image.width;
+				var cube_height = terr_depth/image.height;
+                this.boxes.push(new THREE.Mesh(mov_cube, mat));
+				this.boxes[i*image.height + j].position.x = -terr_width/2 + i*cube_width;
+				this.boxes[i*image.height + j].position.z = +terr_depth/2 - j*cube_height;
+				this.boxes[i*image.height + j].scale.x = cube_width;
+				this.boxes[i*image.height + j].scale.z = cube_height;
+				this.boxes[i*image.height + j].scale.y = heightdata[i*image.height + j];
+				this.boxes[i*image.height + j].position.y += heightdata[i*image.height + j]/2;
+				this.pivot.add(this.boxes[i*image.height + j]);
+			}
 }
