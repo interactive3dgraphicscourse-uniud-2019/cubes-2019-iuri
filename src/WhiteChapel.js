@@ -2,6 +2,26 @@
  File: WhiteChapel.js
  Author: Marco Iuri
  Date: 28/03/2019
+ ---------------------
+ Details:
+ This library contains all the assets used in the WhiteChapel Project carried on by Marco Iuri
+ within the course of Interactive 3D Graphics of the Unversità degli Studi di Udine.
+ Here is a list of all the contained assets:
+ -Little Column: a simple little column made by three box geometries;
+ -Big Column: a simple big column made of three box geometries;
+ -Broken Little Column: a broken version of the Little Column (misses the capitel): its height is adjustable via constructor parameter;
+ -Broken Big Column: same as the broken little column but with different dimensions;
+ -Tesselated Floor: a ruined tesselated floor with adjustable width, depth, and tile size;
+ -Island Basement: a square basement with adjustable width, depth, height and tile size with a gaussian profile;
+ -Ruined Wall: a wall made of bricks with a ruined part whith an adjustable lenght (if this lenght is set to 0 you'll have a standard brick wall);
+ -Chapel Altar: a little and simple altar made by just two box geometries;
+ -Right Triangle: a right triangle with adjustable height and width (here used to make the triangular part of the walls that made the chapel);
+ -Bridge Component: is the basic component of the bridge in the WhiteChapel scene;
+ -Bridge: a bridge screwed on itself which makes a complete 180° spin from one side to the another;
+ -Moving Cube: a simple cube mesh with a velocity and direction parameters to handle its motion;
+ -Terrain: a terrain with the specified dimensione created by the heightmap data that are passed by argument;
+ -Big Island: the first island in the White Chapel scene (the one with the big columns, and the ruined portico made of little columns);
+ -Chapel: the second island in the White Chapel scene (the one with the little church on it);
  ********************/
 
 /*CONSTANTS*/
@@ -34,33 +54,34 @@ var mov_cube;
 /*AUXILIARY FUNCTIONS*/
 function InitGeometries()
 {
-    //Little column
+    //Initialize little column geometries
     lc_basement  = new THREE.BoxBufferGeometry(0.5, 1, 0.5);
     lc_main      = new THREE.BoxBufferGeometry(0.25, 2.5, 0.25);
     lc_capitel   = new THREE.BoxBufferGeometry(0.5, 0.5, 0.5);
 
-    //Big column
+    //Initialize big column geometries
     bc_basement  = new THREE.BoxBufferGeometry(1, 1.5, 1);
     bc_main      = new THREE.BoxBufferGeometry(0.5, 2.75, 0.5);
     bc_capitel   = new THREE.BoxBufferGeometry(1, 0.75, 1);
 
-    //Big island tessellated floor tile
+    //Initialize tessellated floor tile geometry
     bi_floor_tile = new THREE.BoxBufferGeometry(BI_FLOOR_TILE_DIM, 0.5, BI_FLOOR_TILE_DIM);
 
-    //Ruined wall part1 (no-ruined part)
+    //Initialize the geometry of the non-ruined part of the ruined wall
     rwall_part1 = new THREE.BoxBufferGeometry(0.5, 1, 1);
     rwall_bricks = new THREE.BoxBufferGeometry(0.6, BI_WALL_BRICK_H, BI_WALL_BRICK_W);
 
-    //Bridge component
+    //Initialize bridge component geometries
     bridge_comp1 = new THREE.BoxBufferGeometry(2, 2, 2);
     bridge_comp2 = new THREE.BoxBufferGeometry(3, 0.5, 1);
 
-    //MovingCube
+    //Initialize moving cube geometry
     mov_cube = new THREE.BoxBufferGeometry(1, 1, 1);
 }
 
 function InitMaterials()
 {
+    //Initialize the white material used in the scene
     white_mat = new THREE.MeshPhongMaterial();
     white_mat.color.setRGB(1.0, 1.0, 1.0);
 }
@@ -74,7 +95,7 @@ function InitMaterials()
 */
 function BigIsland(position, rotation)
 {
-    //Center pivot creation
+    //Crete center pivot
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
@@ -83,7 +104,7 @@ function BigIsland(position, rotation)
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
 
-    //Create little columns
+    //Create the little columns
     this.lcols = new Array();
     this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25,  3.5), new THREE.Vector3(0,0,0), white_mat));
     this.lcols.push(new LittleColumn(new THREE.Vector3(-3.5, -0.25, -3.5), new THREE.Vector3(0,0,0), white_mat));
@@ -93,11 +114,11 @@ function BigIsland(position, rotation)
     this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25, -1.5), new THREE.Vector3(0,0,0), white_mat));
     this.lcols.push(new LittleColumn(new THREE.Vector3( 3.5, -0.25,  1.5), new THREE.Vector3(0,0,0), white_mat));
     
-    //Add little columns to the island
+    //Add the little columns to the island
     for(var c = 0; c < this.lcols.length; c++)
         this.pivot.add(this.lcols[c].basement);
 
-    //Create broken little columns
+    //Create the broken little columns
     this.b_lcols = new Array();
     this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3( 1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), white_mat, 1.0));
     this.b_lcols.push(new LittleColumn_Broken(new THREE.Vector3(-1.5, -0.25,  3.5), new THREE.Vector3(0,0,0), white_mat, 0.65));
@@ -109,19 +130,19 @@ function BigIsland(position, rotation)
     for(var c = 0; c < this.b_lcols.length; c++)
         this.pivot.add(this.b_lcols[c].basement);
 
-    //Create big column
+    //Create the big column
     this.bcol = new BigColumn(new THREE.Vector3(-2.5, 0, 7), new THREE.Vector3(0,0,0), white_mat);
 
-    //Add big column to the island
+    //Add the big column to the island
     this.pivot.add(this.bcol.basement);
 
-    //Create broken big columns
+    //Create the broken big columns
     this.b_bcols = new Array();
     this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3(   7, 0, 7), new THREE.Vector3(0,0,0), white_mat, 1.0));
     this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3( 2.5, 0, 7), new THREE.Vector3(0,0,0), white_mat, 0.5));
     this.b_bcols.push(new BigColumn_Broken(new THREE.Vector3(  -7, 0, 7), new THREE.Vector3(0,0,0), white_mat, 0.3));
 
-    //Add broken big columns to island
+    //Add the broken big columns to island
     for(var c = 0; c < this.b_bcols.length; c++)
         this.pivot.add(this.b_bcols[c].basement);
 
@@ -266,9 +287,11 @@ function BigColumn_Broken(position, rotation, mat, height)
 */
 function TesselFloor(position, rotation, mat, width, depth, tile_size)
 {
+    //Calculate the number of tile for each side of the floor
     var n_tile_side_x = Math.floor(width / tile_size);
     var n_tile_side_z = Math.floor(depth / tile_size);
 
+    //Create center pivot
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
@@ -277,14 +300,18 @@ function TesselFloor(position, rotation, mat, width, depth, tile_size)
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
 
+    //Create the tiles
     this.tiles = new Array();
     for(var j = 0; j < n_tile_side_z; j++)
     {
         for(var i = 0; i < n_tile_side_x; i++)
         {
+            //Generate a random y scaling factor
             var random_y_scale = BI_FLOOR_TILE_VARIANCE*(Math.random()*2 -1);
             this.tiles.push(new THREE.Mesh(bi_floor_tile, mat));
+            //Scale this tiles by the random scaling factor
             this.tiles[j*n_tile_side_x + i].scale.y += random_y_scale;
+            //Position the tiles in the right place within the floor plane
             this.tiles[j*n_tile_side_x + i].position.x = -width/2 + (tile_size/2) + i*tile_size;
             this.tiles[j*n_tile_side_x + i].position.z = -depth/2 + (tile_size/2) + j*tile_size;
             this.pivot.add(this.tiles[j*n_tile_side_x + i]);
@@ -303,9 +330,11 @@ function TesselFloor(position, rotation, mat, width, depth, tile_size)
 */
 function IslandBasement(position, rotation, mat, width, depth, height)
 {
+    //Calculate the number of tile for each side of the basement
     var n_tile_side_x = width / BI_BASE_TILE_DIM;
     var n_tile_side_z = depth / BI_BASE_TILE_DIM;
 
+    //Create the center pivot
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
@@ -314,18 +343,23 @@ function IslandBasement(position, rotation, mat, width, depth, height)
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
 
+    //Create the boxes that make the basement
     this.tiles = new Array();
     for(var j = 0; j < n_tile_side_z; j++)
     {
         for(var i = 0; i < n_tile_side_x; i++)
         {
+            //Calculate the correct position for this box
             var this_position = new THREE.Vector3(-width/2 + (BI_BASE_TILE_DIM/2) + i*BI_BASE_TILE_DIM, 0, -depth/2 + (BI_BASE_TILE_DIM/2) + j*BI_BASE_TILE_DIM);
+            //Calculate the y scaling using a gaussian function of the distance of the box from the pivot
             var scaling = height*Math.pow(2.71828, -(0.1*this_position.lengthSq())) + 1;
             this.tiles.push(new THREE.Mesh(bi_floor_tile, mat));
+            //scale the box by the calculated scaling
             this.tiles[j*n_tile_side_x + i].scale.y = scaling;
+            //Set the box position as calculated before
             this.tiles[j*n_tile_side_x + i].position.x = this_position.x;
             this.tiles[j*n_tile_side_x + i].position.z = this_position.z;
-            this.tiles[j*n_tile_side_x + i].position.y = -0.25*scaling;     
+            this.tiles[j*n_tile_side_x + i].position.y = -0.25*scaling;   //This translation is used to manitain one side of the boxes on the same plate of the pivot  
             this.pivot.add(this.tiles[j*n_tile_side_x + i]);
         }
     }
@@ -342,6 +376,7 @@ function IslandBasement(position, rotation, mat, width, depth, height)
  */
 function RuinedWall(position, rotation, mat, length, height, broken_len)
 {
+    //Create the pivot
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
@@ -350,13 +385,13 @@ function RuinedWall(position, rotation, mat, length, height, broken_len)
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
 
-    //Non-ruined part of the wall
+    //Create the non-ruined part of the wall
     this.part1 = new THREE.Mesh(rwall_part1, mat);
     this.part1.scale.y = height;
     this.part1.scale.z = length - broken_len;
     this.pivot.add(this.part1);
 
-    //Random disaligned bricks
+    //Create the random disaligned bricks
     this.r_bricks = new Array();
     for(var i = 0; i < 10; i++)
     {
@@ -364,24 +399,31 @@ function RuinedWall(position, rotation, mat, length, height, broken_len)
         var rand_i = Math.floor(Math.random() * ( length - broken_len/ BI_WALL_BRICK_W));
         var rand_j = Math.floor(Math.random() * (height / BI_WALL_BRICK_H));
         this.r_bricks[i] = new THREE.Mesh(rwall_bricks, mat);
+        //Position the bricks in the grid at the calculated random indices
         this.r_bricks[i].position.z = -(length - broken_len)/2 + BI_WALL_BRICK_W/2 + rand_i*BI_WALL_BRICK_W;
         this.r_bricks[i].position.y = +height/2 - BI_WALL_BRICK_H/2 - rand_j*BI_WALL_BRICK_H;
         this.pivot.add(this.r_bricks[i]);
     }
 
-    //Broken part of the wall
+    //Create the broken part of the wall
     this.part2 = new Array();
     if(broken_len > 0)
     {
         for(var i = 0; i < height / BI_WALL_BRICK_H ; i++)
         {
+            //calculate the parameters for the quadratic function used to create this part
             var d = 0.25;
             var c = (broken_len - d) / ((height/BI_WALL_BRICK_H -1)*(height/BI_WALL_BRICK_H -1));
+            //Calculate the new length of this box
             var new_len = c*i*i + d;
+            //Caculate the scaling to obtain a box with the new length
             var scaling = new_len / BI_WALL_BRICK_W;
             this.part2.push(new THREE.Mesh(rwall_bricks, mat));
+            //Apply z scaling
             this.part2[i].scale.z = scaling;
+            //Apply x scaling (to make this part of the wall thick as the non-ruined part)
             this.part2[i].scale.x = 0.83;
+            //Position the box in the correct place
             this.part2[i].position.z = (length - broken_len)/2 + new_len/2;
             this.part2[i].position.y = (height)/2 - BI_WALL_BRICK_H/2 - i*BI_WALL_BRICK_H;
             this.pivot.add(this.part2[i]);
@@ -397,6 +439,7 @@ function RuinedWall(position, rotation, mat, length, height, broken_len)
 */
 function Chapel(position, rotation, mat)
 {
+    //Create the center pivot
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
@@ -405,15 +448,15 @@ function Chapel(position, rotation, mat)
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
 
-    //Chapel floor
+    //Create the chapel floor
     this.floor = new TesselFloor(new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0), mat, 7, 11, CH_FLOOR_TILE_DIM);
     this.pivot.add(this.floor.pivot);
 
-    //Chapel altar
+    //Create the chapel altar
     this.altar = new ChapelAltar(new THREE.Vector3(0, 1.125, 4.25), new THREE.Vector3(0,0,0), mat);
     this.pivot.add(this.altar.pivot);
 
-    //Four column
+    //Create four columns
     this.cols = new Array();
     this.cols[0] = new LittleColumn(new THREE.Vector3( 1.5, 0.75,  1.5), new THREE.Vector3(0,0,0), mat);
     this.cols[1] = new LittleColumn(new THREE.Vector3(-1.5, 0.75,  1.5), new THREE.Vector3(0,0,0), mat);
@@ -422,31 +465,31 @@ function Chapel(position, rotation, mat)
     for(var i = 0; i < this.cols.length; i++)
         this.pivot.add(this.cols[i].basement);
 
-    //Ruined right side wall
+    //Create the ruined right side wall
     this.wall_right = new RuinedWall(new THREE.Vector3(-3.5, 2.25, -1.25), new THREE.Vector3(0,0,0), mat, 10.25, 4, 2.25);
     this.pivot.add(this.wall_right.pivot);
 
-    //Left side wall
+    //Create the left side wall
     this.wall_left = new RuinedWall(new THREE.Vector3(3.5, 2.25, 0), new THREE.Vector3(0,0,0), mat, 10.5, 4, 0);
     this.pivot.add(this.wall_left.pivot);
 
-    //Back wall
+    //Create the back wall
     this.wall_back = new RuinedWall(new THREE.Vector3(0, 2.25, 5.125), new THREE.Vector3(0, Math.PI/2, 0), mat, 7.5, 4, 0);
     this.pivot.add(this.wall_back.pivot);
 
-    //Front wall right
+    //Create the front wall right
     this.front_wall_right = new RuinedWall(new THREE.Vector3(-2.375, 2.25, -5.5), new THREE.Vector3(0, Math.PI/2, 0), mat, 2.75, 4, 0);
     this.pivot.add(this.front_wall_right.pivot);
 
-    //Front wall left
+    //Create the front wall left
     this.front_wall_left = new RuinedWall(new THREE.Vector3(2.375, 2.25, -5.5), new THREE.Vector3(0, Math.PI/2, 0), mat, 2.75, 4, 0);
     this.pivot.add(this.front_wall_left.pivot);
 
-    //Front wall center
+    //Create the front wall center
     this.front_wall_center = new RuinedWall(new THREE.Vector3(0, 5, -5.5), new THREE.Vector3(0, Math.PI/2, 0), mat, 2, 4, 0);
     this.pivot.add(this.front_wall_center.pivot);
 
-    //Triangular parts of the structure
+    //Create triangular parts of the structure
     this.tris = new Array();
     this.tris.push(new RightTriangle(new THREE.Vector3(-1.25, 4, -5.5), new THREE.Vector3(0, -Math.PI/2, 0), mat, 2.5, 1.5));
     this.tris.push(new RightTriangle(new THREE.Vector3(1.25, 4, -5.5), new THREE.Vector3(0, Math.PI/2, 0), mat, 2.5, 1.5));
@@ -454,12 +497,10 @@ function Chapel(position, rotation, mat)
     this.tris.push(new RightTriangle(new THREE.Vector3(0, 7, -5.5), new THREE.Vector3(0, -Math.PI/2.0, 0), mat, 1, 1));
     this.tris.push(new RightTriangle(new THREE.Vector3(0, 4, 5.125), new THREE.Vector3(0, Math.PI/2.0, 0), mat, 3.5, 2));
     this.tris.push(new RightTriangle(new THREE.Vector3(0, 4, 5.125), new THREE.Vector3(0, -Math.PI/2.0, 0), mat, 3.5, 2));
-
-
     for(var i = 0; i < this.tris.length; i++)
         this.pivot.add(this.tris[i].pivot);
 
-    //Chapel basement
+    //Create the chapel basement
     this.basement = new IslandBasement(new THREE.Vector3(0, -0.25, 0), new THREE.Vector3(0,0,0), mat, 9, 13, 50);
     this.pivot.add(this.basement.pivot);
 }
@@ -472,6 +513,7 @@ function Chapel(position, rotation, mat)
 */
 function ChapelAltar(position, rotation, mat)
 {
+    //Create the pivot
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
@@ -480,12 +522,12 @@ function ChapelAltar(position, rotation, mat)
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
 
-    //Upper plane
+    //Create the upper plane
     var plane_geom = new THREE.BoxBufferGeometry(3, 0.25, 1.5);
     this.upper_plane = new THREE.Mesh(plane_geom, mat);
     this.pivot.add(this.upper_plane);
 
-    //Basement
+    //Create the basement
     var base_geom = new THREE.BoxBufferGeometry(2, 0.75, 1);
     this.basement = new THREE.Mesh(base_geom, mat);
     this.basement.position.z = 0.25;
@@ -503,6 +545,7 @@ function ChapelAltar(position, rotation, mat)
 */
 function RightTriangle(position, rotation, mat, base, height)
 {
+    //Create the pivot
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
@@ -516,8 +559,10 @@ function RightTriangle(position, rotation, mat, base, height)
     this.bricks = new Array();
     for(var i = 0; i < base / 0.5; i++)
     {
+        //Calculate the parameters of the linear function
         var d = 0.5;
         var c = (height - 0.5) / (base/0.5 - 1);
+        //Operates in analogy with the ruined part of the ruined wall
         var new_len = c*i + d;
         var scaling_z = 0.5 / BI_WALL_BRICK_W;
         var scaling_y = new_len / BI_WALL_BRICK_H;
@@ -539,6 +584,7 @@ function RightTriangle(position, rotation, mat, base, height)
 */
 function Bridge(position, rotation, mat)
 {
+    //Create the center pivot
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
@@ -548,16 +594,17 @@ function Bridge(position, rotation, mat)
     this.pivot.rotation.z = rotation.z;
 
     //Create and add the bridge components
-   this.elements = new Array();
-   var c = 3/8;
-   var d = -1;
-   for(var i = 0; i < 9; i++)
-   {
-       var this_position = new THREE.Vector3(0, c*i+d, -9 + i*2);
-       var this_rotation = new THREE.Vector3(0, 0, Math.PI/8 * i);
+    this.elements = new Array();
+    //calculate the parameters of the linear function used to position the components of the bridge
+    var c = 3/8;
+    var d = -1;
+    for(var i = 0; i < 9; i++)
+    {
+       var this_position = new THREE.Vector3(0, c*i+d, -9 + i*2); //Calculate position of this component
+       var this_rotation = new THREE.Vector3(0, 0, Math.PI/8 * i); //Calculate rotation of this component
        this.elements.push(new BridgeComponent(this_position, this_rotation, mat));
        this.pivot.add(this.elements[i].pivot);
-   }
+    }
 }
 
 /*
@@ -568,6 +615,7 @@ function Bridge(position, rotation, mat)
 */
 function BridgeComponent(position, rotation, mat)
 {
+    //Create the center pivot
     this.pivot = new THREE.Object3D();
     this.pivot.position.x = position.x;
     this.pivot.position.y = position.y;
@@ -576,7 +624,7 @@ function BridgeComponent(position, rotation, mat)
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
 
-    //Create the parts of the bridge component
+    //Create the lateral parts of the bridge component
     this.lateral_blocks = new Array();
     this.lateral_blocks.push(new THREE.Mesh(bridge_comp1, mat));
     this.lateral_blocks.push(new THREE.Mesh(bridge_comp1, mat));
@@ -587,6 +635,7 @@ function BridgeComponent(position, rotation, mat)
         this.pivot.add(this.lateral_blocks[i]);
     }
     
+    //Create the twoo step of the bridge component
     this.central_blocks = new Array();
     this.central_blocks.push(new THREE.Mesh(bridge_comp2, mat));
     this.central_blocks.push(new THREE.Mesh(bridge_comp2, mat));
@@ -596,6 +645,7 @@ function BridgeComponent(position, rotation, mat)
     for(var i = 0; i < this.central_blocks.length; i++)
         this.pivot.add(this.central_blocks[i]);
 
+    //Create the columns of the bridge component
     this.columns = new Array();
     this.columns.push(new LittleColumn(new THREE.Vector3(2.5, 1.5, 0), new THREE.Vector3(0,0,0), mat));
     this.columns.push(new LittleColumn(new THREE.Vector3(-2.5, 1.5, 0), new THREE.Vector3(0,0,0), mat));
@@ -643,6 +693,7 @@ function MovingCube(position, rotation, mat, vel_mag, vel_dir)
 */
 function Terrain(heightdata, image, terr_width, terr_depth, position, rotation, mat)
 {
+    //Create the center pivot
 	this.pivot = new THREE.Object3D();
 	this.pivot.position.x = position.x;
 	this.pivot.position.y = position.y;
@@ -651,8 +702,8 @@ function Terrain(heightdata, image, terr_width, terr_depth, position, rotation, 
     this.pivot.rotation.y = rotation.y;
     this.pivot.rotation.z = rotation.z;
 
+    //Create the boxes that make the terrain (with the proper dimensions and y scaling)
 	this.boxes = new Array();
-
     for(var i = 0; i < image.width; i++)
     	for(var j = 0; j < image.height; j++)
 			{

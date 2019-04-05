@@ -115,7 +115,7 @@ A questo punto la scena si presenta come segue, mancano solamente i cubi flottan
 ![Scena fin'ora](SC_v_1.png)
 Si fa notare che è stata aggiunta una luce speculare alla prima per mantenere il senso di "indifferenza fra sopra e sotto".
 
-NOTA: per il terreno si è pensato di generarne due copie speculari a partire dalla singoa heightmap, una sotto le isole e una sopra così da dare ancora "stordire" ancora di più lo spettatore non facendoli capire qual'è il sopra e qual'è il sotto.
+NOTA: per il terreno si è pensato di generarne due copie speculari a partire dalla singola heightmap, una sotto le isole e una sopra così da dare ancora "stordire" ancora di più lo spettatore non facendoli capire qual'è il sopra e qual'è il sotto.
 Inoltre, per rendere maggiormente questa sensazione, si è pensato di eliminare i controlli orbitali e permettere il movimento della camera solo a livello del suolo (comunque questa sarà una cosa più implementata eventualmente alla fine se avanzerà del tempo).
 
 ## 02/04/2019 e 03/04/2019 - Giorni 7 e 8: gestione dei cubi casuali animati
@@ -134,3 +134,23 @@ Particolarmente complicata è stata la gestione delle collisioni fra i cubi, in 
 4. Normalizza le velocità ottenute (ricordiamo che sono direzioni, il modulo della velocità lo vogliamo costante);
 
 Il numero di cubi in scena nella versione attuale è 1000 in un volume di lato 100, volendo si potrebbero utilizzare un numero di cubi più grande ma questo porterebbe ad un conseguente calo delle prestazioni dovuto alla ricerca delle collisioni.
+
+## 04/04/2019 - Giorno 9: generazione del terreno tramite heightmap
+
+In questa giornata si è passati all'implementazione che crea un terreno a partire da dei dati estratti da una heightmap; il funzionamento di tale funzione è molto semplice:
+1.  Crea tante box quanti sono i pixel dell'immagine;
+2.  Ne scala le dimensioni x e z in modo da coprire l'area specificata tramite i parametri terr_width e terr_depth;
+3.  Ne scala la dimensione y utilizzando la corrispettiva entry del vettore heightdata;
+4.  Lo posizione nel giusto punt dell'area che il terreno andrà a coprire;
+
+Inoltre si è proceduto ad aggiungere al file WhiteChapel.html (file finale del progetto) la creazione dei due terreni speculari (come proposto nella nota del 01/04/2019) oltre a modificare i controllidella telecamera da OrbitControl a TrackballControl per permette maggiore libertà di movimento all'utente.
+
+I problemi principali di questa fase sono stati relativi più che altro all'impostazione del server apache corretta per poter testare questa nuova funzionalità (non avendo mai usato apache è stato necessario andarsi a leggere un po' di documentazione anche per effettuare un'perazione basilare come spostare la document root del server).
+
+## 05/04/2019 - Giorno 10: finalizzazione del progetto
+
+Nella presente giornata si è effettuata una revisione del codice con anche l'aggiunta di numerosi commenti atti a chiarificarne meglio il funzionamento.
+
+Si è proceduto inoltre all'aggiornamento del diario di sviluppo rimasto indietro di un paio di giorni.
+
+Il progetto è ora completo nella sua versione di base, nei prossimi giorni si procederà alla stesura della relazione finale e a testare alcune idee più avanzate venute in corso d'opera (in particolare si intende tentare la realizzazione di una semplice implementazione di SSAO per dare alla scena una maggiore tridimensionalità e familiarizzare con gli shader).
