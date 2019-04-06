@@ -3,32 +3,71 @@
 		<title>White Chapel - I3DG 2019</title>
 		<style>
 		
-		body {
-			font-family: Monospace;
-			background-color: #f0f0f0;
-			margin: 0px;
-			overflow: hidden;
-		}
+			body {
+				font-family: Monospace;
+				background-color: #f0f0f0;
+				margin: 0px;
+				overflow: hidden;
+			}
 		
-		canvas { 
-			width: 100%; 
-			height: 100%;
-		}
+			canvas { 
+				width: 100%; 
+				height: 100%;
+				position: absolute;
+				top: 0;
+				left: 0;
+			}
 	
-	</style>
-		<script src="lib/three.min.js"></script>
-		<script src="lib/stats.min.js"></script>
-		<script src="lib/Coordinates.js"></script>
-		<script src="lib/TrackballControls.js"></script>
-		<script src="src/WhiteChapel.js"></script>
+		</style>
+
+		<script id="post-vert" type="x-shader/x-vertex">
+			varying vec2 vUv;
+
+			void main()
+			{
+				vUv = uv;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+			}
+		</script>
+		<script id="post-frag" type="x-shader/x-fragment">
+			#include <packing>
+
+			varying vec2 vUv;
+			uniform sampler2D tDiffuse;
+			uniform sampler2D tDepth;
+			uniform float cameraNear;
+			uniform float cameraFar;
+			uniform float amount;
+
+			float readDepth( sampler2D depthSampler,vec2 coord)
+			{
+				float fragCoordZ = texture2D(depthSampler, coord).x;
+				float viewZ = perspectiveDepthToViewZ(fragCoordZ, cameraNear, cameraFar);
+				return viewZToOrthographicDepth(viewZ, cameraNear, cameraFar);
+			}
+
+			void main()
+			{
+				vec3 diffuse = texture2D(tDiffuse, vUv).rgb;
+				float depth = readDepth(tDepth, vUv);
+				gl_FragColor.rgb = amount*vec3(depth) + diffuse;
+				gl_FragColor.a = 1.0;
+			}
+		</script>
 	</head>
 	<body>
-		
+		<canvas></canvas>
+		<script src="lib/three.min.js"></script>
+		<script src="lib/stats.min.js"></script>
+		<script src="lib/TrackballControls.js"></script>
+		<script src="src/WhiteChapel.js"></script>
 		<script>
 		
-		var scene, camera, renderer, controls, stats;
+		var scene, camera, renderer, controls, stats, postScene, postCamera;
 		var time, old_frame, this_frame; //variables used for animation
 		var randomCubes, vol_dim = 150; //Variables used for the handling of the random cubes
+		var target;
+		var postMaterial;
 		
 		function Start() {
 
@@ -36,123 +75,84 @@
 			InitGeometries();
 			InitMaterials();
 
-			//Create the scene and the camera
-			scene = new THREE.Scene();
-			scene.background = new THREE.Color("rgb(10%, 10%, 50%)");
-			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
 			//Create and initialize the webgl renderer
-			renderer = new THREE.WebGLRenderer( {antialias: true} );
+			renderer = new THREE.WebGLRenderer( {canvas: document.querySelector('canvas'), antialias:true} );
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			renderer.setClearColor( 0xf0f0f0 );
 			renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.gammaInput = true;
 			renderer.gammaOutput = true;
-			document.body.appendChild( renderer.domElement );
-			
-			//Set camera position
-			camera.position.set(2,2,2);
-			camera.lookAt( new THREE.Vector3(0,0,0));
+			//document.body.appendChild( renderer.domElement );
+			renderer.autoClear = true;
 
-			//Big Island creation
-			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, -17.5), new THREE.Vector3(0, 0, 0));
-			scene.add(bigIsland.pivot);
-
-			//Chapel creation
-			var white_chapel = new Chapel(new THREE.Vector3(0,0,14.75), new THREE.Vector3(0,0,Math.PI), white_mat);
-			scene.add(white_chapel.pivot);
-
-			//Bridge creation
-			var bridge = new Bridge(new THREE.Vector3(0,-1,0), new THREE.Vector3(0,0,0), white_mat);
-			scene.add(bridge.pivot);
-
-			//Random cube creation
-			var max_cubes_velocity = 0.003;
-			var min_cubes_velocity = 0.001
-			randomCubes = CreateRandomCubes(500, white_mat, max_cubes_velocity, min_cubes_velocity, vol_dim);
-			for(var i = 0; i < randomCubes.length; i++)
-			{
-				scene.add(randomCubes[i].mesh);
-			}
-
-			//Terrain creation
-			var img = new Image();
-			// load img source
-			img.src = "textures/test2.png";
-			img.onload = function () {
-  
-				//get height data from img
-				var data = getHeightData(img,0.4);
-
-				//Create the two specular terrains
-				var terrain1 = new Terrain(data, img, 200, 200, new THREE.Vector3(0, -80, 0), new THREE.Vector3(0,0,0), white_mat);
-				var terrain2 = new Terrain(data, img, 200, 200, new THREE.Vector3(0, +80, 0), new THREE.Vector3(Math.PI,0,0), white_mat);
-				scene.add(terrain1.pivot);
-				scene.add(terrain2.pivot);
-			}	
-
-			//Create the blue hemisphere light
-			hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.5 );
-			hemiLight.color.setRGB( 0.1, 0.1, 0.5);
-			hemiLight.groundColor.setRGB( 0.1, 0.1, 0.5 );
-			hemiLight.position.set( 0, 500, 0 );
-			scene.add( hemiLight );
-
-			//Create the first directional light (orange color)
-			dirLight1 = new THREE.DirectionalLight( 0xffffff, 0.7 );
-			dirLight1.color.setRGB( 1.0 , 0.6, 0.4 );
-			dirLight1.position.set( 0, 1.75, 0.5 );
-			dirLight1.position.multiplyScalar( 50 );
-			scene.add( dirLight1 );
-			dirLight1.castShadow = true;
-			dirLight1.shadow.mapSize.width = 256;
-			dirLight1.shadow.mapSize.height = 256;
-
-			//Create the second directional light (white color)
-			dirLight2 = new THREE.DirectionalLight( 0xffffff, 0.5 );
-			dirLight2.color.setRGB( 1, 1, 1 );
-			dirLight2.position.set( 0, -1.75, 0.5 );
-			dirLight2.position.multiplyScalar( 50 );
-			scene.add( dirLight2 );
-			dirLight2.castShadow = true;
-			dirLight2.shadow.mapSize.width = 256;
-			dirLight2.shadow.mapSize.height = 256;
-			
 			//Initialize the stats (performance monitoring)
 			stats = new Stats();
 			stats.domElement.style.position = 'absolute';
 			stats.domElement.style.top = '0px';
 			document.body.appendChild( stats.domElement );
 			
-			//Initialize camera orbit controls
+			//Set camera position
+			camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 185 );
+			camera.position.set(10,10,10);
+			camera.lookAt( new THREE.Vector3(0,0,0));
+
+			//Initialize camera trackball controls
 			controls = new THREE.TrackballControls( camera );
 			controls.maxDistance = 65;
 			controls.zoomSpeed = 0.6;
 			controls.addEventListener( 'change', Render );
+
+			//Create a multi render target with float buffers
+			target = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight);
+			target.texture = new THREE.Texture();
+			target.texture.format = THREE.RGBAFormat;
+			target.texture.minFilter = THREE.LinearFilter;
+			target.texture.magFilter = THREE.LinearFilter;
+			target.texture.generateMipmaps = true;
+			target.stencilBuffer = false;
+			target.depthBuffer = true;
+			target.depthTexture = new THREE.DepthTexture();
+			target.depthTexture.type = THREE.UnsignedShortType;
+
+			//Setup scene
+			SetupScene();
+
+			//Setup postprocessing
+			SetupPost();
 			
 			//Initialize time values used for the animation
 			old_frame = Date.now();
 			this_frame = 0;
-		}
+
+			postMaterial.uniforms.amount.value = 0.75;
+			}
 		
 		function Update() {
-			requestAnimationFrame( Update );
-			controls.update();  
-			stats.update();
-			Render();
-		}
-		
-		function Render() {
-			
 			//Calculate the passed time from the previous frame
 			this_frame = Date.now();
 			time = this_frame - old_frame;
 			old_frame = this_frame;
 
+			requestAnimationFrame( Update );
+			controls.update();  
+			stats.update();
+
 			//Update random cubes positions
 			UpdateRandomCubes(time, vol_dim);
 
-			renderer.render(scene, camera);
+			//renderer.setRenderTarget(target);
+			renderer.render(scene, camera, target);
+
+			//Postprocessing
+			renderer.setRenderTarget(null);
+			renderer.render(postScene, postCamera);
+
+			//Render();
+		}
+		
+		function Render() {
+
+			
 		}
 
 		function CreateRandomCubes(num_cubes, mat, max_cubes_speed , min_cubes_speed, volume_dim)
@@ -302,7 +302,102 @@
 	 		}
 
 	 		return data;
- 		}
+		}
+		 
+		function SetupPost()
+		{
+			postCamera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1);
+			postCamera.position.z = 1;
+			postMaterial = new THREE.ShaderMaterial(
+				{
+					vertexShader: document.querySelector('#post-vert').textContent.trim(),
+					fragmentShader: document.querySelector('#post-frag').textContent.trim(),
+					uniforms:{
+						cameraNear: {value: camera.near},
+						cameraFar: {value: camera.far},
+						tDiffuse: {value: target.texture},
+						tDepth: {value: target.depthTexture},
+						amount: {value: 1.0},
+					}
+				}
+			);
+
+			var postPlane = new THREE.PlaneBufferGeometry(2,2);
+			var postQuad = new THREE.Mesh(postPlane,postMaterial);
+			postScene = new THREE.Scene();
+			postScene.add(postQuad);
+		}
+
+		function SetupScene()
+		{
+			//Create the scene
+			scene = new THREE.Scene();
+			scene.background = new THREE.Color("rgb(100%, 100%, 100%)");
+
+			//Big Island creation
+			var bigIsland = new BigIsland(new THREE.Vector3(0, -1.75, -17.5), new THREE.Vector3(0, 0, 0));
+			scene.add(bigIsland.pivot);
+
+			//Chapel creation
+			var white_chapel = new Chapel(new THREE.Vector3(0,0,14.75), new THREE.Vector3(0,0,Math.PI), white_mat);
+			scene.add(white_chapel.pivot);
+
+			//Bridge creation
+			var bridge = new Bridge(new THREE.Vector3(0,-1,0), new THREE.Vector3(0,0,0), white_mat);
+			scene.add(bridge.pivot);
+
+			//Random cube creation
+			var max_cubes_velocity = 0.003;
+			var min_cubes_velocity = 0.001
+			randomCubes = CreateRandomCubes(500, white_mat, max_cubes_velocity, min_cubes_velocity, vol_dim);
+			for(var i = 0; i < randomCubes.length; i++)
+			{
+				scene.add(randomCubes[i].mesh);
+			}
+
+			//Terrain creation
+			var img = new Image();
+			// load img source
+			img.src = "textures/test2.png";
+			img.onload = function () {
+  
+				//get height data from img
+				var data = getHeightData(img,0.4);
+
+				//Create the two specular terrains
+				var terrain1 = new Terrain(data, img, 200, 200, new THREE.Vector3(0, -80, 0), new THREE.Vector3(0,0,0), white_mat);
+				var terrain2 = new Terrain(data, img, 200, 200, new THREE.Vector3(0, +80, 0), new THREE.Vector3(Math.PI,0,0), white_mat);
+				scene.add(terrain1.pivot);
+				scene.add(terrain2.pivot);
+			}	
+
+			//Create the blue hemisphere light
+			var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.5 );
+			hemiLight.color.setRGB( 0.1, 0.1, 0.5);
+			hemiLight.groundColor.setRGB( 0.1, 0.1, 0.5 );
+			hemiLight.position.set( 0, 500, 0 );
+			scene.add( hemiLight );
+
+			//Create the first directional light (orange color)
+			var dirLight1 = new THREE.DirectionalLight( 0xffffff, 0.7 );
+			dirLight1.color.setRGB( 1.0 , 0.6, 0.4 );
+			dirLight1.position.set( 0, 1.75, 0.5 );
+			dirLight1.position.multiplyScalar( 50 );
+			scene.add( dirLight1 );
+			dirLight1.castShadow = true;
+			dirLight1.shadow.mapSize.width = 256;
+			dirLight1.shadow.mapSize.height = 256;
+
+			//Create the second directional light (white color)
+			var dirLight2 = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			dirLight2.color.setRGB( 1, 1, 1 );
+			dirLight2.position.set( 0, -1.75, 0.5 );
+			dirLight2.position.multiplyScalar( 50 );
+			scene.add( dirLight2 );
+			dirLight2.castShadow = true;
+			dirLight2.shadow.mapSize.width = 256;
+			dirLight2.shadow.mapSize.height = 256;
+		}
 		
 		Start();
 		Update();
