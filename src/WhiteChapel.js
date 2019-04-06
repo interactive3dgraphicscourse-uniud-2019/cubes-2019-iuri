@@ -671,6 +671,9 @@ function MovingCube(position, rotation, mat, vel_mag, vel_dir)
     this.mesh.rotation.x = rotation.x;
     this.mesh.rotation.y = rotation.y;
     this.mesh.rotation.z = rotation.z;
+    this.mesh.scale.x = 2.0;
+    this.mesh.scale.y = 2.0;
+    this.mesh.scale.z = 2.0;
 
     //Assign velocity parameters
     this.velocity_mag = vel_mag;

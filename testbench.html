@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>Starting Code for 1st Project 2017</title>
+		<title>White Chapel - I3DG 2019</title>
 		<style>
 		
 		body {
@@ -19,68 +19,39 @@
 		<script src="lib/three.min.js"></script>
 		<script src="lib/stats.min.js"></script>
 		<script src="lib/Coordinates.js"></script>
-		<script src="lib/OrbitControls.js"></script>
+		<script src="lib/TrackballControls.js"></script>
 		<script src="src/WhiteChapel.js"></script>
 	</head>
 	<body>
 		
 		<script>
 		
-		var scene, camera, renderer, controls, stats, time, old_frame, this_frame;
-		var randomCubes, vol_dim = 100;
-		var EPS = 0.1;
-		
-		//return array with height data from img, taken from: http://danni-three.blogspot.it/2013/09/threejs-heightmaps.html
-		function getHeightData(img,scale) {
-  
-		 if (scale == undefined) scale=1;
-  
-		    var canvas = document.createElement( 'canvas' );
-		    canvas.width = img.width;
-		    canvas.height = img.height;
-		    var context = canvas.getContext( '2d' );
- 
-		    var size = img.width * img.height;
-			console.log(size);
-		    var data = new Float32Array( size );
- 
-		    context.drawImage(img,0,0);
- 
-		    for ( var i = 0; i < size; i ++ ) {
-		        data[i] = 0
-		    }
- 
-		    var imgd = context.getImageData(0, 0, img.width, img.height);
-		    var pix = imgd.data;
- 
-		    var j=0;
-		    for (var i = 0; i<pix.length; i +=4) {
-		        var all = pix[i]+pix[i+1]+pix[i+2];  // all is in range 0 - 255*3
-		        data[j++] = scale*all/3;   
-		    }
-     
-		    return data;
-		}
+		var scene, camera, renderer, controls, stats;
+		var time, old_frame, this_frame; //variables used for animation
+		var randomCubes, vol_dim = 150; //Variables used for the handling of the random cubes
 		
 		function Start() {
+
+			//Initialize WhiteChapel geometries and materials
 			InitGeometries();
 			InitMaterials();
 
+			//Create the scene and the camera
 			scene = new THREE.Scene();
-			scene.background = new THREE.Color("rgb(10%, 10%, 50%)"); //80, 90, 100
+			scene.background = new THREE.Color("rgb(10%, 10%, 50%)");
 			camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
+			//Create and initialize the webgl renderer
 			renderer = new THREE.WebGLRenderer( {antialias: true} );
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			renderer.setClearColor( 0xf0f0f0 );
 			renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.gammaInput = true;
 			renderer.gammaOutput = true;
-			renderer.shadowMap.enabled = true;
-			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 			document.body.appendChild( renderer.domElement );
 			
-			camera.position.set(3,4,6);
+			//Set camera position
+			camera.position.set(2,2,2);
 			camera.lookAt( new THREE.Vector3(0,0,0));
 
 			//Big Island creation
@@ -94,46 +65,16 @@
 			//Bridge creation
 			var bridge = new Bridge(new THREE.Vector3(0,-1,0), new THREE.Vector3(0,0,0), white_mat);
 			scene.add(bridge.pivot);
-			
+
 			//Random cube creation
-			var cubes_velocity = 0.001;
-			randomCubes = CreateRandomCubes(1000, white_mat, cubes_velocity, vol_dim);
+			var max_cubes_velocity = 0.003;
+			var min_cubes_velocity = 0.001
+			randomCubes = CreateRandomCubes(500, white_mat, max_cubes_velocity, min_cubes_velocity, vol_dim);
 			for(var i = 0; i < randomCubes.length; i++)
 			{
 				scene.add(randomCubes[i].mesh);
 			}
 
-			stats = new Stats();
-			stats.domElement.style.position = 'absolute';
-			stats.domElement.style.top = '0px';
-			document.body.appendChild( stats.domElement );
-			
-			// uncomment if you need to draw coordinate axes when building the scene
-			Coordinates.drawAllAxes();
-			
-			controls = new THREE.OrbitControls( camera );
-			controls.addEventListener( 'change', Render );
-
-			hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.5 );
-			hemiLight.color.setRGB( 0.1, 0.1, 0.5);
-			hemiLight.groundColor.setRGB( 0.1, 0.1, 0.5);
-			hemiLight.position.set( 0, 500, 0 );
-			scene.add( hemiLight );
-
-			dirLight1 = new THREE.DirectionalLight( 0xffffff, 0.7 );
-			dirLight1.color.setRGB( 1.0, 0.6, 0.4 );
-			dirLight1.position.set( 0, 1.75, 0.5 );
-			dirLight1.position.multiplyScalar( 50 );
-			scene.add( dirLight1 );
-			dirLight1.castShadow = true;
-
-			dirLight2 = new THREE.DirectionalLight( 0xffffff, 0.5 );
-			dirLight2.color.setRGB( 1, 1, 1 );
-			dirLight2.position.set( 0, -1.75, 0.5 );
-			dirLight2.position.multiplyScalar( 50 );
-			scene.add( dirLight2 );
-			dirLight2.castShadow = true;
-			
 			//Terrain creation
 			var img = new Image();
 			// load img source
@@ -143,12 +84,53 @@
 				//get height data from img
 				var data = getHeightData(img,0.4);
 
+				//Create the two specular terrains
 				var terrain1 = new Terrain(data, img, 200, 200, new THREE.Vector3(0, -80, 0), new THREE.Vector3(0,0,0), white_mat);
 				var terrain2 = new Terrain(data, img, 200, 200, new THREE.Vector3(0, +80, 0), new THREE.Vector3(Math.PI,0,0), white_mat);
 				scene.add(terrain1.pivot);
 				scene.add(terrain2.pivot);
 			}	
+
+			//Create the blue hemisphere light
+			hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.5 );
+			hemiLight.color.setRGB( 0.1, 0.1, 0.5);
+			hemiLight.groundColor.setRGB( 0.1, 0.1, 0.5 );
+			hemiLight.position.set( 0, 500, 0 );
+			scene.add( hemiLight );
+
+			//Create the first directional light (orange color)
+			dirLight1 = new THREE.DirectionalLight( 0xffffff, 0.7 );
+			dirLight1.color.setRGB( 1.0 , 0.6, 0.4 );
+			dirLight1.position.set( 0, 1.75, 0.5 );
+			dirLight1.position.multiplyScalar( 50 );
+			scene.add( dirLight1 );
+			dirLight1.castShadow = true;
+			dirLight1.shadow.mapSize.width = 256;
+			dirLight1.shadow.mapSize.height = 256;
+
+			//Create the second directional light (white color)
+			dirLight2 = new THREE.DirectionalLight( 0xffffff, 0.5 );
+			dirLight2.color.setRGB( 1, 1, 1 );
+			dirLight2.position.set( 0, -1.75, 0.5 );
+			dirLight2.position.multiplyScalar( 50 );
+			scene.add( dirLight2 );
+			dirLight2.castShadow = true;
+			dirLight2.shadow.mapSize.width = 256;
+			dirLight2.shadow.mapSize.height = 256;
 			
+			//Initialize the stats (performance monitoring)
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			document.body.appendChild( stats.domElement );
+			
+			//Initialize camera orbit controls
+			controls = new THREE.TrackballControls( camera );
+			controls.maxDistance = 65;
+			controls.zoomSpeed = 0.6;
+			controls.addEventListener( 'change', Render );
+			
+			//Initialize time values used for the animation
 			old_frame = Date.now();
 			this_frame = 0;
 		}
@@ -161,19 +143,22 @@
 		}
 		
 		function Render() {
+			
+			//Calculate the passed time from the previous frame
 			this_frame = Date.now();
 			time = this_frame - old_frame;
 			old_frame = this_frame;
 
+			//Update random cubes positions
 			UpdateRandomCubes(time, vol_dim);
 
 			renderer.render(scene, camera);
 		}
 
-		function CreateRandomCubes(num_cubes, mat, cubes_vel, volume_dim)
+		function CreateRandomCubes(num_cubes, mat, max_cubes_speed , min_cubes_speed, volume_dim)
 		{
+			//Create the random cubes
 			var cubes = new Array();
-
 			for(var i = 0; i < num_cubes; i++)
 			{
 				var rand_x;
@@ -183,19 +168,26 @@
 				var done = false;
 				while(!done)
 				{
+					//Generate three random coordinates inside the specified volume
 					rand_x = Math.random()*volume_dim - volume_dim/2;
 					rand_y = Math.random()*volume_dim - volume_dim/2;
 					rand_z = Math.random()*volume_dim - volume_dim/2;
 
-					done = !((rand_x < 8.5 && rand_x > -8.5) && (rand_y < 10.5 && rand_y > -10.5) && (rand_z < 30.5 && rand_z > -30.5)); //Uses theese values for the inner forbidden zon to avoid 
-					                                                                                                                     //generation of cubes on the boundary of the region
+					//Verify that the new coordinates are outside the inner forbidden region
+					done = !((rand_x < 9.5 && rand_x > -9.5) && (rand_y < 11.5 && rand_y > -11.5) && (rand_z < 31.5 && rand_z > -31.5));//Uses theese values for the inner forbidden region to avoid 
+					                                                                                                                    //generation of cubes on the boundary of the region
 				}
 
+				//Generate a three random velocity components 
 				var rand_v_x = Math.random()*2 -1;
 				var rand_v_y = Math.random()*2 -1;
 				var rand_v_z = Math.random()*2 -1;
 
-				cubes.push(new MovingCube(new THREE.Vector3(rand_x, rand_y, rand_z), new THREE.Vector3(0,0,0), mat, cubes_vel, new THREE.Vector3(rand_v_x, rand_v_y, rand_v_z)));
+				//Generate random velocity magnitude between specified boundaries
+				var rand_mag = (Math.random()*(max_cubes_speed - min_cubes_speed)) + (max_cubes_speed + min_cubes_speed)/2;
+
+				//Create this moving cube
+				cubes.push(new MovingCube(new THREE.Vector3(rand_x, rand_y, rand_z), new THREE.Vector3(0,0,0), mat, rand_mag, new THREE.Vector3(rand_v_x, rand_v_y, rand_v_z)));
 			}
 
 			return cubes
@@ -203,17 +195,22 @@
 
 		function UpdateRandomCubes(time_passed, volume_dim)
 		{		
+			//For every cube the volume
 			for(var i = 0; i < randomCubes.length; i++)
 			{
+				//Calculate collision with other cube (handles only one collision at a certain time)
 				var coll = CalculateCubeCollision(i);
 
+				//If the the cube has reached the boundary of the forbidden region or the extrem boundary of the volume
 				if((Math.abs(randomCubes[i].mesh.position.x) >= volume_dim/2 || Math.abs(randomCubes[i].mesh.position.y) >= volume_dim/2 || Math.abs(randomCubes[i].mesh.position.z) >= volume_dim/2) ||
-				   ((Math.abs(randomCubes[i].mesh.position.x) <= 8) && (Math.abs(randomCubes[i].mesh.position.y) <= 10+EPS) && (Math.abs(randomCubes[i].mesh.position.z) <= 30 )))
+				   ((Math.abs(randomCubes[i].mesh.position.x) <= 8) && (Math.abs(randomCubes[i].mesh.position.y) <= 10) && (Math.abs(randomCubes[i].mesh.position.z) <= 30 )))
 				{
+					//Invert its velocity
 					randomCubes[i].velocity_dir.x *= -1.0;
 					randomCubes[i].velocity_dir.y *= -1.0;
 					randomCubes[i].velocity_dir.z *= -1.0;
 				}
+				//Else if the cube has collided with another cube
 				else if(coll.has_collided)
 				{
 					//Determine the position of the two cubes
@@ -244,13 +241,14 @@
 					var seco_pc = randomCubes[coll.cube_idx].velocity_dir.dot(collision);
 
 					//calculate the output velocities 
-					randomCubes[i].velocity_dir.addVectors(new THREE.Vector3(0,0,0), collision.multiplyScalar((seco_pc)));
-					randomCubes[coll.cube_idx].velocity_dir.addVectors(new THREE.Vector3(0,0,0), collision.multiplyScalar((this_pc)));
+					randomCubes[i].velocity_dir.addVectors(randomCubes[i].velocity_dir, collision.multiplyScalar((seco_pc - this_pc)));
+					randomCubes[coll.cube_idx].velocity_dir.addVectors(randomCubes[coll.cube_idx].velocity_dir, collision.multiplyScalar((this_pc - seco_pc)));
 
 					randomCubes[i].velocity_dir.normalize();
 					randomCubes[coll.cube_idx].velocity_dir.normalize();
 				}
 
+				//Calculate the new position of the cube
 				randomCubes[i].mesh.position.x += randomCubes[i].velocity_dir.x * randomCubes[i].velocity_mag * time_passed;
 				randomCubes[i].mesh.position.y += randomCubes[i].velocity_dir.y * randomCubes[i].velocity_mag * time_passed;
 				randomCubes[i].mesh.position.z += randomCubes[i].velocity_dir.z * randomCubes[i].velocity_mag * time_passed;	
@@ -260,8 +258,10 @@
 
 		function CalculateCubeCollision(f_c)
 		{
+			//For every other cube of the vector RandomCubes
 			for(var s_c = 0; s_c < randomCubes.length; s_c++)
 			{
+				//Check if there is a collision and return the collision flag and, eventually, the index of the second cube partecipating the collision
 				if((Math.abs(randomCubes[s_c].mesh.position.x - randomCubes[f_c].mesh.position.x) <= 1.0) &&
 				   (Math.abs(randomCubes[s_c].mesh.position.y - randomCubes[f_c].mesh.position.y) <= 1.0) &&
 				   (Math.abs(randomCubes[s_c].mesh.position.z - randomCubes[f_c].mesh.position.z) <= 1.0) && s_c != f_c)
@@ -270,6 +270,39 @@
 
 			return {"has collided": false, "cube_idx": -1};
 		}
+
+		//return array with height data from img, taken from: http://danni-three.blogspot.it/2013/09/threejs-heightmaps.html
+		function getHeightData(img,scale)
+		{
+  
+ 			if (scale == undefined) scale=1;
+
+	 		var canvas = document.createElement( 'canvas' );
+	 		canvas.width = img.width;
+	 		canvas.height = img.height;
+	 		var context = canvas.getContext( '2d' );
+
+	 		var size = img.width * img.height;
+	 		console.log(size);
+	 		var data = new Float32Array( size );
+
+	 		context.drawImage(img,0,0);
+
+	 		for ( var i = 0; i < size; i ++ )
+		 		data[i] = 0
+
+	 		var imgd = context.getImageData(0, 0, img.width, img.height);
+	 		var pix = imgd.data;
+
+	 		var j=0;
+			for (var i = 0; i<pix.length; i +=4) 
+			{
+		 		var all = pix[i]+pix[i+1]+pix[i+2];  // all is in range 0 - 255*3
+		 		data[j++] = scale*all/3;   
+	 		}
+
+	 		return data;
+ 		}
 		
 		Start();
 		Update();

@@ -28,7 +28,7 @@
 		
 		var scene, camera, renderer, controls, stats;
 		var time, old_frame, this_frame; //variables used for animation
-		var randomCubes, vol_dim = 100; //Variables used for the handling of the random cubes
+		var randomCubes, vol_dim = 150; //Variables used for the handling of the random cubes
 		
 		function Start() {
 
@@ -67,8 +67,9 @@
 			scene.add(bridge.pivot);
 
 			//Random cube creation
-			var cubes_velocity = 0.001;
-			randomCubes = CreateRandomCubes(1000, white_mat, cubes_velocity, vol_dim);
+			var max_cubes_velocity = 0.003;
+			var min_cubes_velocity = 0.001
+			randomCubes = CreateRandomCubes(500, white_mat, max_cubes_velocity, min_cubes_velocity, vol_dim);
 			for(var i = 0; i < randomCubes.length; i++)
 			{
 				scene.add(randomCubes[i].mesh);
@@ -125,7 +126,7 @@
 			
 			//Initialize camera orbit controls
 			controls = new THREE.TrackballControls( camera );
-			controls.maxDistance = 75;
+			controls.maxDistance = 65;
 			controls.zoomSpeed = 0.6;
 			controls.addEventListener( 'change', Render );
 			
@@ -154,7 +155,7 @@
 			renderer.render(scene, camera);
 		}
 
-		function CreateRandomCubes(num_cubes, mat, cubes_vel, volume_dim)
+		function CreateRandomCubes(num_cubes, mat, max_cubes_speed , min_cubes_speed, volume_dim)
 		{
 			//Create the random cubes
 			var cubes = new Array();
@@ -182,8 +183,11 @@
 				var rand_v_y = Math.random()*2 -1;
 				var rand_v_z = Math.random()*2 -1;
 
+				//Generate random velocity magnitude between specified boundaries
+				var rand_mag = (Math.random()*(max_cubes_speed - min_cubes_speed)) + (max_cubes_speed + min_cubes_speed)/2;
+
 				//Create this moving cube
-				cubes.push(new MovingCube(new THREE.Vector3(rand_x, rand_y, rand_z), new THREE.Vector3(0,0,0), mat, cubes_vel, new THREE.Vector3(rand_v_x, rand_v_y, rand_v_z)));
+				cubes.push(new MovingCube(new THREE.Vector3(rand_x, rand_y, rand_z), new THREE.Vector3(0,0,0), mat, rand_mag, new THREE.Vector3(rand_v_x, rand_v_y, rand_v_z)));
 			}
 
 			return cubes
