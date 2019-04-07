@@ -6,7 +6,7 @@ Nel seguente documento saranno riportate tutte le fasi dello sviluppo del proget
 
 Il progetto verterà sulla realizzazione di una scena 3D composta unicamente da cubi bianchi di varie dimensioni prendendo ispirazione da alcuni ambienti del videogioco _NieR: Automata_ come la
 _Copied City_ ([esempio 1](https://i.pinimg.com/originals/20/b8/c5/20b8c50b9ab9b90f5bef86c0ce2d386d.jpg), [esempio2](https://steamuserimages-a.akamaihd.net/ugc/947341295631366587/AB7D5149E653F0F5018483E310B4545002E49A48/)) o la _Tower_ (di cui purtroppo non ho trovato esempi da linkare direttamente, lascio comunque una [pagina](https://lparchive.org/NieR-Automata/Update%20135/) in cui è possibile vederne varie viste dell'interno).
-Altra ispirazione è stata la serie di Dark Souls per i suoi ambienti in rovina (in particolare la mappa Vetta dell'Arcidrago e la mappa Ringed City del terzo capitolo).
+Altra ispirazione è stata la serie di Dark Souls per i suoi ambienti in rovina (in particolare la mappa Vetta dell'Arcidrago del terzo capitolo).
 Per ottenere quindi il risultato voluto (il gioco di luci ombre che rende belli questi ambienti) si utilizzerà il codice di partenza contenente un semplice lightset (che verrà opportunamente modificato).
 
 ## 26/03/2019 - Giorno 1: organizzazione del lavoro
