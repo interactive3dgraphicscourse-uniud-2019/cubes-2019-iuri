@@ -154,3 +154,27 @@ Nella presente giornata si è effettuata una revisione del codice con anche l'ag
 Si è proceduto inoltre all'aggiornamento del diario di sviluppo rimasto indietro di un paio di giorni.
 
 Il progetto è ora completo nella sua versione di base, nei prossimi giorni si procederà alla stesura della relazione finale e a testare alcune idee più avanzate venute in corso d'opera (in particolare si intende tentare la realizzazione di una semplice implementazione di SSAO per dare alla scena una maggiore tridimensionalità e familiarizzare con gli shader).
+
+## 06/04/2019 - Giorno 11: sperimentazione con il postprocessing
+
+In questa giornata si è proceduto a fare vari esperimenti di postprocessing della scena renderizzata utilizzando la seguente tecnica:
+1.  Rendering della scena originale su texture, in particolare settando un render target che contenenva sia la diffuse texture sia la depth texture in modo da avere a disposizione i valori dello z buffer nella fase di post processing;
+2.  Applicazione su di un piano, posizionato di fronte ad un'opportuna camera ortografica, dello shader material di post processing il quale va ad utilizzare le texture create nella prima fase di rendering;
+3.  Rendering della scena contenente il piano e la camera ortografica.
+
+L'idea iniziale era di implementare un algoritmo di SSAO (magari semplificato) ma, vista la complicatezza di questo e il poco tempo a disposizione, si è proceduto ad implementare un semplicissimo shader che, combinando le informazioni della diffuse texture e della depth texture, genera un effetto che unisce una nebbia volumetrica e un bloom (vedi immagine sotto):
+
+![Effetto fog/bloom](postprocess.png)
+
+Visto il piacevole impatto estetico si è deciso di lasciare questo semplice effetto nella versione finale del software.
+
+Ulteriori operazioni effettuate in questa giornata sono:
+*   Ottimizzazione della scena: riducendo il numero di cubi flottanti e aumentandone le dimensioni, nonchè riducendo la risoluzione della heightmap ad appena 20x20 pixel, si è riusciti ad ottenere un notevole incremento prestazionale passando da circ 15 fps di media ad oltre 40;
+*   Cambio dei controlli della camera: siccome i controlli OrbitControl forniscono una mobilità molto limitata (ad esempio la camera non può girare a 360° verticalmente) si è deciso di passare ai TrackballControl, che si adattano meglio alla scena.
+
+## 07/04/2019 - Giorno 12: implementazione GUI e rifiniture
+
+Al fine di rendere l'esperienza più interattiva si è deciso di aggiungere una semplice GUI che permetta di controllare alcuni in parametri della scena (in particolare la quantità di effetto di postprocessing applicat e la velocità dei cubi flottanti).
+Si è inoltre proceduto a sistemare alcuni problemi con le collisioni fra i cubi andano a semplificare di molto il codice relativo oltre a ricontrollare il codice ed ad aggiungere un titolo visibile della scena:
+
+![Versione finale](final.png)

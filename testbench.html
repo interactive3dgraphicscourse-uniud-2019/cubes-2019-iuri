@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>White Chapel - I3DG 2019</title>
+		<title>White Chapel - I3DG 2019 - Marco Iuri</title>
 		<style>
 		
 			body {
@@ -9,13 +9,18 @@
 				margin: 0px;
 				overflow: hidden;
 			}
-		
-			canvas { 
-				width: 100%; 
-				height: 100%;
+
+			#info{
 				position: absolute;
-				top: 0;
-				left: 0;
+				top: 0px;
+				width: 100%;
+				padding: 5px;
+				font-family:Monospace;
+				font-size: 18px;
+				font-weight: bold;
+				text-align: center;
+				text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+				color: #0099ff;
 			}
 	
 		</style>
@@ -49,25 +54,27 @@
 			void main()
 			{
 				vec3 diffuse = texture2D(tDiffuse, vUv).rgb;
-				float depth = readDepth(tDepth, vUv);
-				gl_FragColor.rgb = amount*vec3(depth) + diffuse;
+				float fog = readDepth(tDepth, vUv);
+
+				gl_FragColor.rgb = amount*vec3(fog) + diffuse;
 				gl_FragColor.a = 1.0;
 			}
 		</script>
-	</head>
-	<body>
-		<canvas></canvas>
 		<script src="lib/three.min.js"></script>
 		<script src="lib/stats.min.js"></script>
 		<script src="lib/TrackballControls.js"></script>
+		<script src="lib/dat.gui.min.js"></script>
 		<script src="src/WhiteChapel.js"></script>
+	</head>
+	<body>
+		<div id="info">White Chapel - Interactive 3D Graphics 2019 - Marco Iuri</div>
+
 		<script>
 		
-		var scene, camera, renderer, controls, stats, postScene, postCamera;
-		var time, old_frame, this_frame; //variables used for animation
-		var randomCubes, vol_dim = 150; //Variables used for the handling of the random cubes
-		var target;
-		var postMaterial;
+		var scene, camera, renderer, controls, stats, target, postScene, postCamera, postMaterial;
+		var time, old_frame, this_frame; //Variables used for animation
+		var randomCubes, cubes_vel, vol_dim = 150, max_cubes_velocity, min_cubes_velocity; //Variables used for the handling of the random cubes
+		var options; //used for user controls
 		
 		function Start() {
 
@@ -76,13 +83,13 @@
 			InitMaterials();
 
 			//Create and initialize the webgl renderer
-			renderer = new THREE.WebGLRenderer( {canvas: document.querySelector('canvas'), antialias:true} );
+			renderer = new THREE.WebGLRenderer( {antialias:true} );
 			renderer.setSize( window.innerWidth, window.innerHeight );
 			renderer.setClearColor( 0xf0f0f0 );
 			renderer.setPixelRatio( window.devicePixelRatio );
 			renderer.gammaInput = true;
 			renderer.gammaOutput = true;
-			//document.body.appendChild( renderer.domElement );
+			document.body.appendChild( renderer.domElement );
 			renderer.autoClear = true;
 
 			//Initialize the stats (performance monitoring)
@@ -92,19 +99,17 @@
 			document.body.appendChild( stats.domElement );
 			
 			//Set camera position
-			camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 185 );
+			camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
 			camera.position.set(10,10,10);
 			camera.lookAt( new THREE.Vector3(0,0,0));
 
 			//Initialize camera trackball controls
-			controls = new THREE.TrackballControls( camera );
+			controls = new THREE.TrackballControls( camera, renderer.domElement );
 			controls.maxDistance = 65;
 			controls.zoomSpeed = 0.6;
-			controls.addEventListener( 'change', Render );
 
 			//Create a multi render target with float buffers
 			target = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight);
-			target.texture = new THREE.Texture();
 			target.texture.format = THREE.RGBAFormat;
 			target.texture.minFilter = THREE.LinearFilter;
 			target.texture.magFilter = THREE.LinearFilter;
@@ -112,23 +117,51 @@
 			target.stencilBuffer = false;
 			target.depthBuffer = true;
 			target.depthTexture = new THREE.DepthTexture();
-			target.depthTexture.type = THREE.UnsignedShortType;
+			target.depthTexture.type = THREE.UnsignedIntType;
+
+			//Set base values for cubes velocity
+			max_cubes_velocity = 0.003;
+			min_cubes_velocity = 0.001;
 
 			//Setup scene
 			SetupScene();
 
 			//Setup postprocessing
 			SetupPost();
+
+			//Set default value of fog/bloom amount
+			postMaterial.uniforms.amount.value = 4.5;
 			
 			//Initialize time values used for the animation
 			old_frame = Date.now();
 			this_frame = 0;
 
-			postMaterial.uniforms.amount.value = 0.75;
+			//User controllable values
+			options = {
+				amount: 4.5,
+				scale_speed: 1.0,
+				reset: function(){
+					this.amount = 4.5;
+					this.scale_speed = 1.0;
+				}
 			}
+
+			//Create GUI
+			var gui = new dat.GUI();
+
+			var post_processing = gui.addFolder('Fog/Bloom postprocessing');
+			post_processing.add(options, 'amount', 0, 9.0).name('Effect amount').listen();
+			post_processing.open();
+
+			var random_cubes = gui.addFolder('Random moving cubes');
+			random_cubes.add(options, 'scale_speed', 0, 10.0).name('Speed scale').listen();
+			random_cubes.open();
+
+			gui.add(options, 'reset');
+		}
 		
 		function Update() {
-			//Calculate the passed time from the previous frame
+			//Calculate the elapsed time from the previous frame
 			this_frame = Date.now();
 			time = this_frame - old_frame;
 			old_frame = this_frame;
@@ -138,21 +171,16 @@
 			stats.update();
 
 			//Update random cubes positions
-			UpdateRandomCubes(time, vol_dim);
+			UpdateRandomCubes(time, vol_dim, options.scale_speed);
 
-			//renderer.setRenderTarget(target);
+			//Update fog amount
+			postMaterial.uniforms.amount.value = options.amount;
+
+			//Render the original scene
 			renderer.render(scene, camera, target);
 
-			//Postprocessing
-			renderer.setRenderTarget(null);
-			renderer.render(postScene, postCamera);
-
-			//Render();
-		}
-		
-		function Render() {
-
-			
+			//Render the post processing scene
+			renderer.render(postScene, postCamera);	
 		}
 
 		function CreateRandomCubes(num_cubes, mat, max_cubes_speed , min_cubes_speed, volume_dim)
@@ -193,7 +221,7 @@
 			return cubes
 		}
 
-		function UpdateRandomCubes(time_passed, volume_dim)
+		function UpdateRandomCubes(time_passed, volume_dim, vel_scale)
 		{		
 			//For every cube the volume
 			for(var i = 0; i < randomCubes.length; i++)
@@ -234,24 +262,25 @@
 						collision = new THREE.Vector3(1.0, 0.0, 0.0);
 						distance = 1.0;
 					}
-					
+
 					collision.normalize();
-					//calculate the compoments of the two velocity of the cubes wich are parallel to the collision vector
-					var this_pc = randomCubes[i].velocity_dir.dot(collision);
-					var seco_pc = randomCubes[coll.cube_idx].velocity_dir.dot(collision);
 
 					//calculate the output velocities 
-					randomCubes[i].velocity_dir.addVectors(randomCubes[i].velocity_dir, collision.multiplyScalar((seco_pc - this_pc)));
-					randomCubes[coll.cube_idx].velocity_dir.addVectors(randomCubes[coll.cube_idx].velocity_dir, collision.multiplyScalar((this_pc - seco_pc)));
+					randomCubes[i].velocity_dir.x += -collision.x;
+					randomCubes[i].velocity_dir.y += -collision.y;
+					randomCubes[i].velocity_dir.z += -collision.z;
+					randomCubes[coll.cube_idx].velocity_dir.x += collision.x;
+					randomCubes[coll.cube_idx].velocity_dir.y += collision.y;
+					randomCubes[coll.cube_idx].velocity_dir.z += collision.z;
 
 					randomCubes[i].velocity_dir.normalize();
 					randomCubes[coll.cube_idx].velocity_dir.normalize();
 				}
 
 				//Calculate the new position of the cube
-				randomCubes[i].mesh.position.x += randomCubes[i].velocity_dir.x * randomCubes[i].velocity_mag * time_passed;
-				randomCubes[i].mesh.position.y += randomCubes[i].velocity_dir.y * randomCubes[i].velocity_mag * time_passed;
-				randomCubes[i].mesh.position.z += randomCubes[i].velocity_dir.z * randomCubes[i].velocity_mag * time_passed;	
+				randomCubes[i].mesh.position.x += randomCubes[i].velocity_dir.x * randomCubes[i].velocity_mag * time_passed * vel_scale;
+				randomCubes[i].mesh.position.y += randomCubes[i].velocity_dir.y * randomCubes[i].velocity_mag * time_passed * vel_scale;
+				randomCubes[i].mesh.position.z += randomCubes[i].velocity_dir.z * randomCubes[i].velocity_mag * time_passed * vel_scale;	
 					
 			}
 		}
@@ -262,9 +291,9 @@
 			for(var s_c = 0; s_c < randomCubes.length; s_c++)
 			{
 				//Check if there is a collision and return the collision flag and, eventually, the index of the second cube partecipating the collision
-				if((Math.abs(randomCubes[s_c].mesh.position.x - randomCubes[f_c].mesh.position.x) <= 1.0) &&
-				   (Math.abs(randomCubes[s_c].mesh.position.y - randomCubes[f_c].mesh.position.y) <= 1.0) &&
-				   (Math.abs(randomCubes[s_c].mesh.position.z - randomCubes[f_c].mesh.position.z) <= 1.0) && s_c != f_c)
+				if((Math.abs(randomCubes[s_c].mesh.position.x - randomCubes[f_c].mesh.position.x) <= 2.0) &&
+				   (Math.abs(randomCubes[s_c].mesh.position.y - randomCubes[f_c].mesh.position.y) <= 2.0) &&
+				   (Math.abs(randomCubes[s_c].mesh.position.z - randomCubes[f_c].mesh.position.z) <= 2.0) && s_c != f_c)
 					return {"has_collided": true, "cube_idx": s_c};
 			}
 
@@ -306,6 +335,7 @@
 		 
 		function SetupPost()
 		{
+			//Create the ortographic camera and the plane used to apply post processing to the rendered original scene
 			postCamera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1);
 			postCamera.position.z = 1;
 			postMaterial = new THREE.ShaderMaterial(
@@ -347,8 +377,6 @@
 			scene.add(bridge.pivot);
 
 			//Random cube creation
-			var max_cubes_velocity = 0.003;
-			var min_cubes_velocity = 0.001
 			randomCubes = CreateRandomCubes(500, white_mat, max_cubes_velocity, min_cubes_velocity, vol_dim);
 			for(var i = 0; i < randomCubes.length; i++)
 			{
