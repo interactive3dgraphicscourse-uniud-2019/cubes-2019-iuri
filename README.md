@@ -61,7 +61,9 @@ L'utilizzo di uno sfondo bianco poi fa sì che questo effetto dia anche un'idea 
 
 Di seguito è visibile un video che dimostra le caratteristiche dell'applicazione nella sua versione finale:
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/bOtyXwKqfQ4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>>
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=bOtyXwKqfQ4
+" target="_blank"><img src="http://img.youtube.com/vi/bOtyXwKqfQ4/0.jpg" 
+alt="IMAGE ALT TEXT HERE" width="640" height="480" border="0" /></a>
 
 ## Evoluzioni future
 
